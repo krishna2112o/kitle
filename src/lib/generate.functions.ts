@@ -90,7 +90,8 @@ export const generateProject = createServerFn({ method: "POST" })
     let providerSupportsTools = true;
 
     if (usingByok) {
-      const providerId: ProviderId = (data.userProvider && PROVIDERS[data.userProvider] ? data.userProvider : "gemini");
+      const providerId: ProviderId =
+        data.userProvider && PROVIDERS[data.userProvider] ? data.userProvider : "gemini";
       const p = PROVIDERS[providerId];
       endpoint = p.endpoint;
       modelId = data.userModel?.trim() || p.defaultModel;
@@ -130,9 +131,14 @@ export const generateProject = createServerFn({ method: "POST" })
     if (!resp.ok) {
       const t = await resp.text().catch(() => "");
       if (resp.status === 429) throw new Error("Rate limited. Please wait and try again.");
-      if (resp.status === 402) throw new Error("AI credits exhausted. Add credits in Workspace Settings.");
+      if (resp.status === 402)
+        throw new Error("AI credits exhausted. Add credits in Workspace Settings.");
       if (resp.status === 401 || resp.status === 403) {
-        throw new Error(usingByok ? `Invalid ${PROVIDERS[(data.userProvider as ProviderId) || "gemini"]?.label ?? "provider"} API key.` : "AI gateway authentication failed.");
+        throw new Error(
+          usingByok
+            ? `Invalid ${PROVIDERS[(data.userProvider as ProviderId) || "gemini"]?.label ?? "provider"} API key.`
+            : "AI gateway authentication failed.",
+        );
       }
       console.error("AI error", resp.status, t);
       throw new Error(`AI error (${resp.status}): ${t.slice(0, 200)}`);

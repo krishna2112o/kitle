@@ -26,12 +26,54 @@ export type LinkItem = {
 };
 
 export const THEMES = [
-  { id: "midnight", label: "Midnight", bg: "linear-gradient(180deg,#0b0b16,#1a1030)", card: "rgba(255,255,255,0.06)", text: "#f4f4f5", accent: "#a78bfa" },
-  { id: "sunset", label: "Sunset", bg: "linear-gradient(180deg,#1a0b1f,#3a0e1f 40%,#f97316)", card: "rgba(255,255,255,0.08)", text: "#fff7ed", accent: "#fb923c" },
-  { id: "ocean", label: "Ocean", bg: "linear-gradient(180deg,#031627,#0c4a6e,#38bdf8)", card: "rgba(255,255,255,0.08)", text: "#e0f2fe", accent: "#38bdf8" },
-  { id: "forest", label: "Forest", bg: "linear-gradient(180deg,#02150e,#064e3b,#10b981)", card: "rgba(255,255,255,0.08)", text: "#ecfdf5", accent: "#34d399" },
-  { id: "peach", label: "Peach", bg: "linear-gradient(180deg,#fff7ed,#fed7aa,#fca5a5)", card: "rgba(255,255,255,0.7)", text: "#1c0a06", accent: "#ea580c" },
-  { id: "mono", label: "Mono", bg: "#0a0a0a", card: "rgba(255,255,255,0.05)", text: "#fafafa", accent: "#fafafa" },
+  {
+    id: "midnight",
+    label: "Midnight",
+    bg: "linear-gradient(180deg,#0b0b16,#1a1030)",
+    card: "rgba(255,255,255,0.06)",
+    text: "#f4f4f5",
+    accent: "#a78bfa",
+  },
+  {
+    id: "sunset",
+    label: "Sunset",
+    bg: "linear-gradient(180deg,#1a0b1f,#3a0e1f 40%,#f97316)",
+    card: "rgba(255,255,255,0.08)",
+    text: "#fff7ed",
+    accent: "#fb923c",
+  },
+  {
+    id: "ocean",
+    label: "Ocean",
+    bg: "linear-gradient(180deg,#031627,#0c4a6e,#38bdf8)",
+    card: "rgba(255,255,255,0.08)",
+    text: "#e0f2fe",
+    accent: "#38bdf8",
+  },
+  {
+    id: "forest",
+    label: "Forest",
+    bg: "linear-gradient(180deg,#02150e,#064e3b,#10b981)",
+    card: "rgba(255,255,255,0.08)",
+    text: "#ecfdf5",
+    accent: "#34d399",
+  },
+  {
+    id: "peach",
+    label: "Peach",
+    bg: "linear-gradient(180deg,#fff7ed,#fed7aa,#fca5a5)",
+    card: "rgba(255,255,255,0.7)",
+    text: "#1c0a06",
+    accent: "#ea580c",
+  },
+  {
+    id: "mono",
+    label: "Mono",
+    bg: "#0a0a0a",
+    card: "rgba(255,255,255,0.05)",
+    text: "#fafafa",
+    accent: "#fafafa",
+  },
 ] as const;
 
 export type ThemeId = (typeof THEMES)[number]["id"];
@@ -40,9 +82,24 @@ export function getTheme(id: string) {
 }
 
 export const ICONS = [
-  "link", "globe", "instagram", "twitter", "youtube", "tiktok",
-  "github", "linkedin", "spotify", "facebook", "twitch", "mail",
-  "phone", "shop", "music", "video", "book", "star",
+  "link",
+  "globe",
+  "instagram",
+  "twitter",
+  "youtube",
+  "tiktok",
+  "github",
+  "linkedin",
+  "spotify",
+  "facebook",
+  "twitch",
+  "mail",
+  "phone",
+  "shop",
+  "music",
+  "video",
+  "book",
+  "star",
 ] as const;
 
 export async function getMyProfile(): Promise<LinkProfile | null> {
@@ -116,7 +173,12 @@ export async function listPublicLinksByUser(userId: string): Promise<LinkItem[]>
   return (data ?? []) as LinkItem[];
 }
 
-export async function createLink(input: { title: string; url: string; icon: string; position: number }) {
+export async function createLink(input: {
+  title: string;
+  url: string;
+  icon: string;
+  position: number;
+}) {
   const { data: u } = await supabase.auth.getUser();
   if (!u.user) throw new Error("Not signed in");
   const { data, error } = await supabase
@@ -128,7 +190,10 @@ export async function createLink(input: { title: string; url: string; icon: stri
   return data as LinkItem;
 }
 
-export async function updateLink(id: string, patch: Partial<Pick<LinkItem, "title" | "url" | "icon" | "position" | "active">>) {
+export async function updateLink(
+  id: string,
+  patch: Partial<Pick<LinkItem, "title" | "url" | "icon" | "position" | "active">>,
+) {
   const { error } = await supabase.from("links").update(patch).eq("id", id);
   if (error) throw error;
 }
@@ -140,5 +205,8 @@ export async function deleteLink(id: string) {
 
 export async function incrementClick(id: string, currentClicks: number) {
   // Best-effort — RLS allows update only for owners, so this silently no-ops for visitors.
-  await supabase.from("links").update({ clicks: currentClicks + 1 }).eq("id", id);
+  await supabase
+    .from("links")
+    .update({ clicks: currentClicks + 1 })
+    .eq("id", id);
 }

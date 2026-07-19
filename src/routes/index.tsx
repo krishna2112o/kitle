@@ -57,7 +57,7 @@ const TEMPLATES: Template[] = [
         <div style="margin-top:10px;display:inline-block;background:#6366f1;padding:5px 12px;border-radius:999px;font-size:9px">Get started →</div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:18px">
-        ${[1,2,3].map(()=>`<div style="background:#1f2937;border-radius:8px;padding:8px;font-size:8px"><div style="width:14px;height:14px;background:#6366f1;border-radius:4px;margin-bottom:4px"></div>Feature</div>`).join("")}
+        ${[1, 2, 3].map(() => `<div style="background:#1f2937;border-radius:8px;padding:8px;font-size:8px"><div style="width:14px;height:14px;background:#6366f1;border-radius:4px;margin-bottom:4px"></div>Feature</div>`).join("")}
       </div>
     </div>`,
     prompt:
@@ -90,7 +90,7 @@ const TEMPLATES: Template[] = [
       <div style="display:flex;justify-content:space-between;font-size:10px;border-bottom:1px solid #eee;padding-bottom:8px"><b>SHOP</b><span>🔍 ♡ 🛒</span></div>
       <div style="margin-top:10px;background:linear-gradient(135deg,#fde68a,#f59e0b);border-radius:12px;padding:14px;color:#111"><b style="font-size:13px">Summer Sale -40%</b></div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px">
-        ${[1,2,3,4,5,6].map((i)=>`<div><div style="background:#f3f4f6;height:36px;border-radius:6px"></div><div style="font-size:8px;margin-top:3px">Item ${i}</div><div style="font-size:8px;font-weight:700">$${i*9}</div></div>`).join("")}
+        ${[1, 2, 3, 4, 5, 6].map((i) => `<div><div style="background:#f3f4f6;height:36px;border-radius:6px"></div><div style="font-size:8px;margin-top:3px">Item ${i}</div><div style="font-size:8px;font-weight:700">$${i * 9}</div></div>`).join("")}
       </div>
     </div>`,
     prompt:
@@ -106,7 +106,7 @@ const TEMPLATES: Template[] = [
       <div style="flex:1;padding:10px">
         <div style="font-size:11px;font-weight:700">Dashboard</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:8px">
-          ${["12.4k","$48k","94%"].map(v=>`<div style="background:#1e293b;border-radius:6px;padding:6px;font-size:8px"><div style="opacity:.6">Metric</div><b style="font-size:11px">${v}</b></div>`).join("")}
+          ${["12.4k", "$48k", "94%"].map((v) => `<div style="background:#1e293b;border-radius:6px;padding:6px;font-size:8px"><div style="opacity:.6">Metric</div><b style="font-size:11px">${v}</b></div>`).join("")}
         </div>
         <div style="background:#1e293b;border-radius:6px;height:50px;margin-top:6px;padding:6px;font-size:8px">📈 Chart</div>
       </div>
@@ -274,7 +274,7 @@ const TEMPLATES: Template[] = [
       <div style="margin-top:10px;font-size:18px;font-weight:800;letter-spacing:-.02em;line-height:1">Where designers<br/>meet the future.</div>
       <div style="margin-top:8px;font-size:9px;opacity:.8">Berlin · Sept 12–14, 2026</div>
       <div style="margin-top:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;text-align:center;font-size:8px">
-        ${["48","12","30","09"].map(v=>`<div style="background:#ffffff14;border-radius:6px;padding:5px"><b style="font-size:12px">${v}</b><div style="opacity:.7">d</div></div>`).join("")}
+        ${["48", "12", "30", "09"].map((v) => `<div style="background:#ffffff14;border-radius:6px;padding:5px"><b style="font-size:12px">${v}</b><div style="opacity:.7">d</div></div>`).join("")}
       </div>
     </div>`,
     prompt:
@@ -294,7 +294,6 @@ const TEMPLATES: Template[] = [
   },
 ];
 
-
 function LandingPage() {
   const navigate = useNavigate({ from: "/" });
   const { user, loading: authLoading } = useAuth();
@@ -311,18 +310,25 @@ function LandingPage() {
   const [templatesOpen, setTemplatesOpen] = useState(false);
   const [savedOpen, setSavedOpen] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
-  const [savedProjects, setSavedProjects] = useState<Array<{ id: string; name: string; savedAt: number }>>([]);
+  const [savedProjects, setSavedProjects] = useState<
+    Array<{ id: string; name: string; savedAt: number }>
+  >([]);
   const [mode, setMode] = useState<ChatMode>("website");
   const [modeMenuOpen, setModeMenuOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-
 
   useEffect(() => {
     if (!savedOpen) return;
     try {
       const raw = localStorage.getItem("nuvic.savedProjects");
       const list = raw ? JSON.parse(raw) : [];
-      setSavedProjects(list.map((p: { id: string; name: string; savedAt: number }) => ({ id: p.id, name: p.name, savedAt: p.savedAt })));
+      setSavedProjects(
+        list.map((p: { id: string; name: string; savedAt: number }) => ({
+          id: p.id,
+          name: p.name,
+          savedAt: p.savedAt,
+        })),
+      );
     } catch {
       setSavedProjects([]);
     }
@@ -341,7 +347,13 @@ function LandingPage() {
       const list = raw ? JSON.parse(raw) : [];
       const next = list.filter((p: { id: string }) => p.id !== id);
       localStorage.setItem("nuvic.savedProjects", JSON.stringify(next));
-      setSavedProjects(next.map((p: { id: string; name: string; savedAt: number }) => ({ id: p.id, name: p.name, savedAt: p.savedAt })));
+      setSavedProjects(
+        next.map((p: { id: string; name: string; savedAt: number }) => ({
+          id: p.id,
+          name: p.name,
+          savedAt: p.savedAt,
+        })),
+      );
     } catch {
       /* noop */
     }
@@ -414,7 +426,9 @@ function LandingPage() {
       setImporting(false);
     }
     const truncated = html.slice(0, 18000);
-    const userInstruction = prompt.trim() || "Recreate this website faithfully in React, then improve its design and structure while preserving content and brand.";
+    const userInstruction =
+      prompt.trim() ||
+      "Recreate this website faithfully in React, then improve its design and structure while preserving content and brand.";
     const finalPrompt = `${userInstruction}\n\n--- EXISTING SITE${url ? ` (${url})` : ""} ---\n${truncated}\n--- END ---`;
     setImportOpen(false);
     go(finalPrompt);
@@ -489,7 +503,14 @@ function LandingPage() {
                 onClick={() => setMobileNavOpen(false)}
                 className="flex items-center gap-2 rounded-xl px-3 py-3 text-sm text-foreground transition-colors hover:bg-muted"
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
                   <path d="M3 3v18h18" strokeLinecap="round" />
                   <path d="M7 14l4-4 3 3 5-6" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -539,20 +560,29 @@ function LandingPage() {
                   className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-2.5 py-1.5 text-xs font-medium text-foreground/90 transition-colors hover:bg-muted"
                   aria-label="Choose command"
                 >
-                  {(() => { const Icon = MODES[mode].icon; return <Icon className="h-3.5 w-3.5" />; })()}
+                  {(() => {
+                    const Icon = MODES[mode].icon;
+                    return <Icon className="h-3.5 w-3.5" />;
+                  })()}
                   <span className="hidden sm:inline">{MODES[mode].command}</span>
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <svg
+                    width="10"
+                    height="10"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                  >
                     <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>
                 {modeMenuOpen && (
                   <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setModeMenuOpen(false)}
-                    />
+                    <div className="fixed inset-0 z-40" onClick={() => setModeMenuOpen(false)} />
                     <div className="absolute bottom-full left-0 z-50 mb-2 w-72 overflow-hidden rounded-xl border border-border bg-popover p-1 shadow-2xl">
-                      <div className="px-2 py-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">Choose a command</div>
+                      <div className="px-2 py-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Choose a command
+                      </div>
                       {MODE_LIST.map((m) => (
                         <button
                           key={m.id}
@@ -567,13 +597,19 @@ function LandingPage() {
                             (m.id === mode ? "bg-muted/60" : "")
                           }
                         >
-                          <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border bg-muted/40 text-foreground/80"><m.icon className="h-3.5 w-3.5" /></span>
+                          <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-border bg-muted/40 text-foreground/80">
+                            <m.icon className="h-3.5 w-3.5" />
+                          </span>
                           <span className="min-w-0 flex-1">
                             <span className="flex items-center gap-1.5">
                               <span className="font-semibold text-foreground">{m.label}</span>
-                              <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">{m.command}</span>
+                              <span className="rounded bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+                                {m.command}
+                              </span>
                             </span>
-                            <span className="mt-0.5 block text-[11px] text-muted-foreground">{m.description}</span>
+                            <span className="mt-0.5 block text-[11px] text-muted-foreground">
+                              {m.description}
+                            </span>
                           </span>
                         </button>
                       ))}
@@ -603,9 +639,19 @@ function LandingPage() {
             onClick={() => setImportOpen(true)}
             className="inline-flex items-center gap-2 rounded-full border border-foreground/30 bg-foreground/5 px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-foreground/10 sm:px-5 sm:py-2.5 sm:text-sm"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+            >
               <path d="M12 20h9" strokeLinecap="round" />
-              <path d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z" strokeLinejoin="round" />
+              <path
+                d="M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4 12.5-12.5z"
+                strokeLinejoin="round"
+              />
             </svg>
             Edit existing site
           </button>
@@ -613,7 +659,14 @@ function LandingPage() {
             to="/analyze"
             className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-medium text-foreground transition-colors hover:bg-primary/20 sm:px-5 sm:py-2.5 sm:text-sm"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+            >
               <path d="M3 3v18h18" strokeLinecap="round" />
               <path d="M7 14l4-4 3 3 5-6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -653,7 +706,9 @@ function LandingPage() {
               <p className="mb-4 text-sm text-muted-foreground">
                 Paste a URL or the page HTML. We'll recreate it in React, then apply your changes.
               </p>
-              <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-muted-foreground">URL</label>
+              <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                URL
+              </label>
               <input
                 type="url"
                 placeholder="https://example.com"
@@ -661,7 +716,9 @@ function LandingPage() {
                 onChange={(e) => setImportUrl(e.target.value)}
                 className="mb-3 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-foreground/40 focus:outline-none"
               />
-              <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-muted-foreground">Or paste HTML</label>
+              <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Or paste HTML
+              </label>
               <textarea
                 rows={5}
                 placeholder="<html>..."
@@ -669,7 +726,9 @@ function LandingPage() {
                 onChange={(e) => setImportHtml(e.target.value)}
                 className="mb-3 w-full resize-y rounded-lg border border-border bg-background px-3 py-2 font-mono text-xs focus:border-foreground/40 focus:outline-none"
               />
-              <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-muted-foreground">What should we change? (optional)</label>
+              <label className="mb-1 block text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                What should we change? (optional)
+              </label>
               <textarea
                 rows={2}
                 placeholder="Modernize the design, add a pricing section, improve mobile…"
@@ -711,7 +770,8 @@ function LandingPage() {
                 <div>
                   <h2 className="text-lg font-semibold sm:text-xl">Start from a template</h2>
                   <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
-                    Pick a starting point. We'll generate a complete React frontend with full sections, components and responsive design.
+                    Pick a starting point. We'll generate a complete React frontend with full
+                    sections, components and responsive design.
                   </p>
                 </div>
                 <button
@@ -753,7 +813,9 @@ function LandingPage() {
                           {tpl.category}
                         </span>
                       </div>
-                      <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{tpl.description}</p>
+                      <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                        {tpl.description}
+                      </p>
                       <div className="mt-3 flex gap-2">
                         <button
                           onClick={() => setPreviewTemplate(tpl)}
@@ -820,8 +882,19 @@ function LandingPage() {
                         className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
                         aria-label="Delete"
                       >
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                          <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M6 6l1 14a2 2 0 002 2h6a2 2 0 002-2l1-14" strokeLinecap="round" strokeLinejoin="round" />
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                        >
+                          <path
+                            d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M6 6l1 14a2 2 0 002 2h6a2 2 0 002-2l1-14"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
                         </svg>
                       </button>
                     </li>
@@ -844,7 +917,14 @@ function LandingPage() {
         {/* Scroll cue */}
         <div className="mt-10 flex flex-col items-center gap-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground sm:mt-16 sm:text-[11px]">
           Scroll to explore
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
             <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
@@ -858,14 +938,25 @@ function NavItem({ label }: { label: string }) {
   return (
     <button className="inline-flex items-center gap-1 hover:text-foreground">
       {label}
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+      <svg
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.5"
+      >
         <path d="M6 9l6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </button>
   );
 }
 
-function IconButton({ children, className, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+function IconButton({
+  children,
+  className,
+  ...props
+}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
     <button
       {...props}
@@ -893,7 +984,14 @@ function CircleButton({ children, ...props }: React.ButtonHTMLAttributes<HTMLBut
 
 function GlobeIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
       <circle cx="12" cy="12" r="9" />
       <path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18" />
     </svg>
@@ -901,7 +999,14 @@ function GlobeIcon() {
 }
 function UserIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
       <circle cx="12" cy="8" r="4" />
       <path d="M4 21a8 8 0 0116 0" strokeLinecap="round" />
     </svg>
@@ -909,21 +1014,46 @@ function UserIcon() {
 }
 function MenuIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
       <path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round" />
     </svg>
   );
 }
 function PaperclipIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M21 12.5l-8.5 8.5a5 5 0 01-7-7l9-9a3.5 3.5 0 015 5l-9 9a2 2 0 01-3-3l8-8" strokeLinecap="round" strokeLinejoin="round" />
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <path
+        d="M21 12.5l-8.5 8.5a5 5 0 01-7-7l9-9a3.5 3.5 0 015 5l-9 9a2 2 0 01-3-3l8-8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
 function ChipIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
       <rect x="6" y="6" width="12" height="12" rx="2" />
       <rect x="9" y="9" width="6" height="6" rx="1" />
       <path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3" strokeLinecap="round" />
@@ -932,27 +1062,56 @@ function ChipIcon() {
 }
 function BoltIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
       <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" strokeLinejoin="round" />
     </svg>
   );
 }
 function ArrowUpIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
       <path d="M12 19V5M5 12l7-7 7 7" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 function SpinnerIcon() {
   return (
-    <svg className="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+    <svg
+      className="animate-spin"
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+    >
       <path d="M12 3a9 9 0 019 9" strokeLinecap="round" />
     </svg>
   );
 }
 function ExampleIcon({ name }: { name: string }) {
-  const common = { width: 16, height: 16, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.8 } as const;
+  const common = {
+    width: 16,
+    height: 16,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.8,
+  } as const;
   if (name === "video")
     return (
       <svg {...common}>
@@ -964,7 +1123,10 @@ function ExampleIcon({ name }: { name: string }) {
     return (
       <svg {...common}>
         <rect x="5" y="3" width="14" height="18" rx="2" />
-        <path d="M8 7h8M8 11h2M12 11h2M16 11h.01M8 15h2M12 15h2M16 15h.01M8 19h2M12 19h2M16 19h.01" strokeLinecap="round" />
+        <path
+          d="M8 7h8M8 11h2M12 11h2M16 11h.01M8 15h2M12 15h2M16 15h.01M8 19h2M12 19h2M16 19h.01"
+          strokeLinecap="round"
+        />
       </svg>
     );
   if (name === "edit")
@@ -984,14 +1146,31 @@ function ExampleIcon({ name }: { name: string }) {
 
 function FolderIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" strokeLinejoin="round" />
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <path
+        d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
 function TemplatesIcon() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
       <rect x="3" y="3" width="7" height="9" rx="1.5" />
       <rect x="14" y="3" width="7" height="5" rx="1.5" />
       <rect x="14" y="12" width="7" height="9" rx="1.5" />

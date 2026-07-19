@@ -69,7 +69,8 @@ function downloadCSV(result: AnalyzeResult) {
   };
   const parts: string[] = [];
   parts.push("# KPIs\nlabel,value,delta");
-  for (const k of result.kpis ?? []) parts.push([esc(k.label), esc(k.value), esc(k.delta ?? "")].join(","));
+  for (const k of result.kpis ?? [])
+    parts.push([esc(k.label), esc(k.value), esc(k.delta ?? "")].join(","));
   for (const c of result.charts ?? []) {
     parts.push(`\n# Chart: ${c.title}`);
     const headers = [c.xKey, ...c.yKeys];
@@ -90,7 +91,8 @@ function downloadReport(result: AnalyzeResult, format: "md" | "json") {
   lines.push(`## Executive Summary`, "", result.summary ?? "", "");
   if (result.kpis?.length) {
     lines.push(`## Key Metrics`, "");
-    for (const k of result.kpis) lines.push(`- **${k.label}:** ${k.value}${k.delta ? ` (${k.delta})` : ""}`);
+    for (const k of result.kpis)
+      lines.push(`- **${k.label}:** ${k.value}${k.delta ? ` (${k.delta})` : ""}`);
     lines.push("");
   }
   if (result.insights?.length) {

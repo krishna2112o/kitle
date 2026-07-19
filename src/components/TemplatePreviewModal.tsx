@@ -28,11 +28,15 @@ export function TemplatePreviewModal({
       >
         <div className="flex items-start justify-between gap-4 border-b border-border p-4">
           <div>
-            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{template.category}</div>
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              {template.category}
+            </div>
             <h3 className="text-lg font-semibold text-foreground">{template.name}</h3>
             <p className="mt-1 max-w-xl text-sm text-muted-foreground">{template.description}</p>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">✕</button>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
+            ✕
+          </button>
         </div>
         <div className="bg-muted/30 p-4">
           <div className="mx-auto aspect-[16/10] w-full max-w-3xl overflow-hidden rounded-xl border border-border bg-background shadow-xl">
@@ -41,7 +45,12 @@ export function TemplatePreviewModal({
               srcDoc={`<!doctype html><html><body style="margin:0">${template.preview}</body></html>`}
               sandbox=""
               className="h-full w-full"
-              style={{ transform: "scale(1.6)", transformOrigin: "top left", width: "62.5%", height: "62.5%" }}
+              style={{
+                transform: "scale(1.6)",
+                transformOrigin: "top left",
+                width: "62.5%",
+                height: "62.5%",
+              }}
             />
           </div>
         </div>

@@ -173,8 +173,8 @@ export function VercelDeployDialog({ open, onClose, files }: Props) {
             </button>
 
             <p className="text-[10px] leading-relaxed text-muted-foreground">
-              Your token is stored only in this browser (localStorage). Vercel will
-              auto-detect this as a Vite project and build it.
+              Your token is stored only in this browser (localStorage). Vercel will auto-detect this
+              as a Vite project and build it.
             </p>
           </div>
         </div>

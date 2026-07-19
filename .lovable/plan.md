@@ -32,12 +32,15 @@ Single page, dark theme, split layout:
 1. User sends prompt. Frontend posts `{ messages, currentFiles }` to a server function.
 2. Server function calls Lovable AI (`google/gemini-3-flash-preview`) with a system prompt instructing it to return a JSON object of files via tool calling:
    ```json
-   { "files": [
+   {
+     "files": [
        { "path": "/App.tsx", "content": "..." },
        { "path": "/index.html", "content": "..." },
        { "path": "/main.tsx", "content": "..." },
        { "path": "/styles.css", "content": "..." }
-   ], "summary": "short note shown in chat" }
+     ],
+     "summary": "short note shown in chat"
+   }
    ```
 3. On follow-up turns, the current file map is included so the model edits in place rather than starting over.
 4. Frontend merges returned files into Sandpack state → preview hot-reloads automatically.

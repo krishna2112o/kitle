@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import sdk, { type VM } from "@stackblitz/sdk";
+import type { WebContainer, FileSystemTree } from "@webcontainer/api";
 import {
   Code2,
   Eye,
@@ -39,7 +39,7 @@ interface Props {
 
 type Tab = "preview" | "code";
 
-/** Strip leading slash so StackBlitz SDK receives paths like "App.tsx" not "/App.tsx" */
+/** Strip leading slash so paths are clean like "src/App.tsx" not "/src/App.tsx" */
 function normalizeFiles(files: Record<string, string>): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [path, content] of Object.entries(files)) {
@@ -81,6 +81,85 @@ async function downloadAsZip(files: Record<string, string>) {
   URL.revokeObjectURL(url);
 }
 
+// Convert a flat Record<string, string> of files into a nested FileSystemTree
+function buildFileSystemTree(files: Record<string, string>): FileSystemTree {
+  const tree: FileSystemTree = {};
+
+  for (const [path, content] of Object.entries(files)) {
+    const cleanPath = path.startsWith("/") ? path.slice(1) : path;
+    const parts = cleanPath.split("/");
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let current: any = tree;
+
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      const isLast = i === parts.length - 1;
+
+      if (isLast) {
+        current[part] = {
+          file: {
+            contents: content,
+          },
+        };
+      } else {
+        if (!current[part]) {
+          current[part] = {
+            directory: {},
+          };
+        }
+        current = current[part].directory;
+      }
+    }
+  }
+
+  return tree;
+}
+
+const DEFAULT_PACKAGE_JSON = JSON.stringify(
+  {
+    name: "vite-react-typescript",
+    private: true,
+    version: "0.0.0",
+    type: "module",
+    scripts: {
+      dev: "vite",
+      build: "tsc && vite build",
+      preview: "vite preview",
+    },
+    dependencies: {
+      react: "^19.2.0",
+      "react-dom": "^19.2.0",
+    },
+    devDependencies: {
+      "@types/react": "^19.2.0",
+      "@types/react-dom": "^19.2.0",
+      "@vitejs/plugin-react": "^5.0.4",
+      typescript: "^5.8.3",
+      vite: "^7.3.1",
+    },
+  },
+  null,
+  2,
+);
+
+const DEFAULT_VITE_CONFIG = `import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+});`;
+
+let webcontainerInstancePromise: Promise<WebContainer> | null = null;
+
+async function getWebContainer(): Promise<WebContainer | null> {
+  if (typeof window === "undefined") return null;
+  if (!webcontainerInstancePromise) {
+    const { WebContainer } = await import("@webcontainer/api");
+    webcontainerInstancePromise = WebContainer.boot();
+  }
+  return webcontainerInstancePromise;
+}
+
 export function PreviewPanel({
   files,
   isLoading = false,
@@ -95,19 +174,30 @@ export function PreviewPanel({
   const [vercelOpen, setVercelOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
 
-  // StackBlitz WebContainer refs
-  const sbContainerRef = useRef<HTMLDivElement>(null);
-  const vmRef = useRef<VM | null>(null);
+  // WebContainer States
+  const [wcStatus, setWcStatus] = useState<
+    "idle" | "booting" | "installing" | "starting" | "ready" | "error"
+  >("idle");
+  const [statusText, setStatusText] = useState("");
+  const [iframeUrl, setIframeUrl] = useState<string | null>(null);
+
+  const webcontainerInstanceRef = useRef<WebContainer | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const devProcessRef = useRef<any>(null);
   const mountedFilesRef = useRef<Record<string, string>>({});
+  const lastInstalledPackageJsonRef = useRef<string>("");
 
   const isSandbox = mode === "website";
   const modeDef = MODES[mode];
   const hasFiles = Object.keys(files).length > 0;
   const hasText = assistantText.trim().length > 0;
-  const showLoader = isLoading && tab === "preview";
 
   const normalizedFiles = normalizeFiles(files);
   const fileList = Object.keys(normalizedFiles).sort();
+
+  // Show bento loader when loading from assistant or when WebContainer is booting/preparing
+  const showLoader =
+    (isLoading || (isSandbox && hasFiles && wcStatus !== "ready")) && tab === "preview";
 
   // Auto-select first file when file list changes
   useEffect(() => {
@@ -116,65 +206,190 @@ export function PreviewPanel({
     }
   }, [fileList.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Mount or hot-update StackBlitz WebContainer when files change
+  // Manage WebContainer Lifecycle
   useEffect(() => {
     if (!isSandbox || !hasFiles) return;
 
-    const container = sbContainerRef.current;
-    if (!container) return;
+    let active = true;
 
-    if (!vmRef.current) {
-      // First mount — embed a new project
-      sdk
-        .embedProject(
-          container,
-          {
-            title: "Generated Project",
-            template: "react-ts",
-            files: normalizedFiles,
-          },
-          {
-            view: "preview",
-            hideNavigation: true,
-            hideDevTools: false,
-            forceEmbedLayout: true,
-            height: "100%",
-          },
-        )
-        .then((vm) => {
-          vmRef.current = vm;
-          mountedFilesRef.current = { ...normalizedFiles };
+    async function initWebContainer() {
+      try {
+        // Ensure default package.json & vite.config.ts are added if missing
+        const finalFiles = { ...normalizedFiles };
+        if (!finalFiles["package.json"]) {
+          finalFiles["package.json"] = DEFAULT_PACKAGE_JSON;
+        }
+        if (!finalFiles["vite.config.ts"] && !finalFiles["vite.config.js"]) {
+          finalFiles["vite.config.ts"] = DEFAULT_VITE_CONFIG;
+        }
+
+        const webcontainer = await getWebContainer();
+        if (!webcontainer || !active) return;
+
+        // If WebContainer is already running the dev server, only push/hot-reload file changes (HMR)
+        if (webcontainerInstanceRef.current === webcontainer) {
+          const create: Record<string, string> = {};
+          const destroy: string[] = [];
+
+          for (const [path, content] of Object.entries(finalFiles)) {
+            if (mountedFilesRef.current[path] !== content) {
+              create[path] = content;
+            }
+          }
+          for (const path of Object.keys(mountedFilesRef.current)) {
+            if (!(path in finalFiles)) {
+              destroy.push(path);
+            }
+          }
+
+          if (Object.keys(create).length > 0 || destroy.length > 0) {
+            for (const [path, content] of Object.entries(create)) {
+              const cleanPath = path.startsWith("/") ? path.slice(1) : path;
+              const lastSlash = cleanPath.lastIndexOf("/");
+              if (lastSlash !== -1) {
+                const dir = cleanPath.slice(0, lastSlash);
+                await webcontainer.fs.mkdir(dir, { recursive: true }).catch((err) => {
+                  console.warn(err);
+                });
+              }
+              await webcontainer.fs.writeFile(cleanPath, content);
+            }
+            for (const path of destroy) {
+              const cleanPath = path.startsWith("/") ? path.slice(1) : path;
+              await webcontainer.fs.rm(cleanPath, { recursive: true }).catch((err) => {
+                console.warn(err);
+              });
+            }
+            mountedFilesRef.current = { ...finalFiles };
+          }
+          return;
+        }
+
+        // Fresh Boot/Start Setup
+        webcontainerInstanceRef.current = webcontainer;
+        setWcStatus("booting");
+        setStatusText("Preparing WebContainer sandbox...");
+
+        // 1. Clean workspace (keep node_modules if present to act as dependency cache)
+        setStatusText("Cleaning workspace...");
+        try {
+          const existing = await webcontainer.fs.readdir(".");
+          for (const file of existing) {
+            if (file !== "node_modules") {
+              await webcontainer.fs.rm(file, { recursive: true }).catch((err) => {
+                console.warn(err);
+              });
+            }
+          }
+        } catch (err) {
+          console.error("Error clearing workspace:", err);
+        }
+
+        if (!active) return;
+
+        // 2. Mount workspace files
+        setStatusText("Mounting project files...");
+        const tree = buildFileSystemTree(finalFiles);
+        await webcontainer.mount(tree);
+        mountedFilesRef.current = { ...finalFiles };
+
+        if (!active) return;
+
+        // 3. Conditional npm install (check if package.json changed or if node_modules cache is missing)
+        const packageJsonChanged =
+          finalFiles["package.json"] !== lastInstalledPackageJsonRef.current;
+        let nodeModulesExists = false;
+        try {
+          const rootFiles = await webcontainer.fs.readdir(".");
+          nodeModulesExists = rootFiles.includes("node_modules");
+        } catch (err) {
+          console.warn(err);
+        }
+
+        if (packageJsonChanged || !nodeModulesExists) {
+          setWcStatus("installing");
+          setStatusText("Installing standard packages...");
+          const installProcess = await webcontainer.spawn("npm", ["install"]);
+          installProcess.output.pipeTo(
+            new WritableStream({
+              write(data) {
+                console.log("[WebContainer Install]", data);
+              },
+            }),
+          );
+          const installCode = await installProcess.exit;
+          if (installCode !== 0) {
+            if (active) {
+              setWcStatus("error");
+              setStatusText("Failed to install project packages.");
+            }
+            return;
+          }
+          lastInstalledPackageJsonRef.current = finalFiles["package.json"];
+        }
+
+        if (!active) return;
+
+        // 4. Run Vite development server
+        setWcStatus("starting");
+        setStatusText("Starting local development server...");
+        if (devProcessRef.current) {
+          try {
+            devProcessRef.current.kill();
+          } catch (err) {
+            console.warn(err);
+          }
+        }
+
+        const devProcess = await webcontainer.spawn("npm", ["run", "dev"]);
+        devProcessRef.current = devProcess;
+        devProcess.output.pipeTo(
+          new WritableStream({
+            write(data) {
+              console.log("[WebContainer Dev]", data);
+            },
+          }),
+        );
+
+        // Listen for server-ready
+        webcontainer.on("server-ready", (port, url) => {
+          if (active) {
+            setIframeUrl(url);
+            setWcStatus("ready");
+            setStatusText("Ready");
+          }
         });
-    } else {
-      // Subsequent updates — diff and patch via applyFsDiff (no iframe reload)
-      const create: Record<string, string> = {};
-      const destroy: string[] = [];
-
-      for (const [path, content] of Object.entries(normalizedFiles)) {
-        if (mountedFilesRef.current[path] !== content) {
-          create[path] = content;
+      } catch (err) {
+        console.error("Error setting up WebContainer:", err);
+        if (active) {
+          setWcStatus("error");
+          setStatusText("WebContainer initialization failed.");
         }
-      }
-      for (const path of Object.keys(mountedFilesRef.current)) {
-        if (!(path in normalizedFiles)) {
-          destroy.push(path);
-        }
-      }
-
-      if (Object.keys(create).length > 0 || destroy.length > 0) {
-        vmRef.current.applyFsDiff({ create, destroy }).catch(console.error);
-        mountedFilesRef.current = { ...normalizedFiles };
       }
     }
+
+    void initWebContainer();
+
+    return () => {
+      active = false;
+      // Note: we preserve the singleton instance in the module, but we reset instance refs for clean remount
+      webcontainerInstanceRef.current = null;
+    };
   }, [files, isSandbox, hasFiles]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Tear down VM when leaving website mode
+  // Cleanup active dev process when leaving sandbox mode or unmounting
   useEffect(() => {
-    if (!isSandbox) {
-      vmRef.current = null;
-      mountedFilesRef.current = {};
-    }
-  }, [isSandbox]);
+    return () => {
+      if (devProcessRef.current) {
+        try {
+          devProcessRef.current.kill();
+        } catch (err) {
+          console.warn(err);
+        }
+        devProcessRef.current = null;
+      }
+    };
+  }, []);
 
   const handleDownload = () => {
     if (!hasFiles) return;
@@ -307,11 +522,15 @@ export function PreviewPanel({
             >
               <BentoLoader
                 label={
-                  isSandbox
-                    ? hasFiles
-                      ? "Updating your app"
-                      : "Generating your app"
-                    : `Working on ${modeDef.label.toLowerCase()}…`
+                  !isSandbox
+                    ? `Working on ${modeDef.label.toLowerCase()}…`
+                    : wcStatus !== "ready" && statusText
+                      ? statusText
+                      : isLoading
+                        ? hasFiles
+                          ? "Updating your app"
+                          : "Generating your app"
+                        : "Preparing your preview..."
                 }
               />
             </div>
@@ -374,18 +593,17 @@ export function PreviewPanel({
               </div>
             </div>
           ) : (
-            /* StackBlitz WebContainer preview + file-tree code viewer */
+            /* StackBlitz WebContainer direct preview + file-tree code viewer */
             <div className="flex h-full w-full flex-col">
-              {/* StackBlitz iframe — always in DOM so the WebContainer keeps running */}
-              <div
-                ref={sbContainerRef}
-                style={{
-                  flex: 1,
-                  minHeight: 0,
-                  display: tab === "preview" ? "flex" : "none",
-                  flexDirection: "column",
-                }}
-              />
+              {/* Custom WebContainer iframe */}
+              {tab === "preview" && iframeUrl && wcStatus === "ready" && (
+                <iframe
+                  title="WebContainer Live Preview"
+                  src={iframeUrl}
+                  className="h-full w-full border-0 bg-white"
+                  allow="geolocation; microphone; camera; midi; vr; accelerometer; gyroscope; payment; ambient-light-sensor; encrypted-media; usb; vr; xr-spatial-tracking; clipboard-write; cross-origin-isolated"
+                />
+              )}
 
               {/* Code tab — custom file tree + viewer */}
               {tab === "code" && (
@@ -491,16 +709,8 @@ export function PreviewPanel({
         </div>
       </div>
 
-      <NetlifyDeployDialog
-        open={netlifyOpen}
-        onClose={() => setNetlifyOpen(false)}
-        files={files}
-      />
-      <VercelDeployDialog
-        open={vercelOpen}
-        onClose={() => setVercelOpen(false)}
-        files={files}
-      />
+      <NetlifyDeployDialog open={netlifyOpen} onClose={() => setNetlifyOpen(false)} files={files} />
+      <VercelDeployDialog open={vercelOpen} onClose={() => setVercelOpen(false)} files={files} />
     </div>
   );
 }

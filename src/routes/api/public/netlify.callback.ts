@@ -69,7 +69,8 @@ export const Route = createFileRoute("/api/public/netlify/callback")({
           if (!tokenRes.ok || !body.access_token) {
             return respond({
               ok: false,
-              error: body.error_description || body.error || `token_exchange_failed_${tokenRes.status}`,
+              error:
+                body.error_description || body.error || `token_exchange_failed_${tokenRes.status}`,
             });
           }
           return respond({ ok: true, access_token: body.access_token });

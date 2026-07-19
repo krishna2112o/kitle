@@ -80,7 +80,8 @@ export const analyzeData = createServerFn({ method: "POST" })
           type: "function",
           function: {
             name: "emit_analysis",
-            description: "Emit a complete analytics report with KPIs, insights, charts, and recommendations.",
+            description:
+              "Emit a complete analytics report with KPIs, insights, charts, and recommendations.",
             parameters: {
               type: "object",
               properties: {
@@ -144,7 +145,8 @@ export const analyzeData = createServerFn({ method: "POST" })
 
     if (!resp.ok) {
       if (resp.status === 429) throw new Error("Rate limited. Please wait a moment.");
-      if (resp.status === 402) throw new Error("AI credits exhausted. Add credits in Workspace Settings → Usage.");
+      if (resp.status === 402)
+        throw new Error("AI credits exhausted. Add credits in Workspace Settings → Usage.");
       const t = await resp.text().catch(() => "");
       console.error("AI gateway error", resp.status, t);
       throw new Error(`AI gateway error (${resp.status})`);
@@ -152,7 +154,8 @@ export const analyzeData = createServerFn({ method: "POST" })
 
     const json = await resp.json();
     const toolCall = json?.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall?.function?.arguments) throw new Error("Model did not return analysis. Try again.");
+    if (!toolCall?.function?.arguments)
+      throw new Error("Model did not return analysis. Try again.");
 
     let parsed: AnalyzeResult;
     try {

@@ -22,7 +22,10 @@ export const Route = createFileRoute("/builder")({
   head: () => ({
     meta: [
       { title: "Builder — AI App Builder" },
-      { name: "description", content: "Generate and iterate on a React + Vite app with live preview." },
+      {
+        name: "description",
+        content: "Generate and iterate on a React + Vite app with live preview.",
+      },
     ],
   }),
   component: BuilderPage,
@@ -70,7 +73,14 @@ function BuilderPage() {
 
     try {
       const result = await generateProject({
-        data: { messages: nextMessages, currentFiles: files, mode, userApiKey, userModel, userProvider },
+        data: {
+          messages: nextMessages,
+          currentFiles: files,
+          mode,
+          userApiKey,
+          userModel,
+          userProvider,
+        },
       });
       if (result.outputs === "files") {
         setFiles(result.files);
@@ -83,7 +93,10 @@ function BuilderPage() {
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong.";
       toast.error(msg);
-      setMessages([...nextMessages, { role: "assistant", content: `⚠️ ${msg}`, mode, outputs: "text" }]);
+      setMessages([
+        ...nextMessages,
+        { role: "assistant", content: `⚠️ ${msg}`, mode, outputs: "text" },
+      ]);
     } finally {
       setIsLoading(false);
     }
@@ -129,7 +142,7 @@ function BuilderPage() {
       initialFired.current = true;
       const { mode: parsedMode, rest } = parseSlashCommand(prompt);
       const finalMode: ChatMode = parsedMode ?? "website";
-      const finalText = parsedMode ? (rest.trim() || prompt) : prompt;
+      const finalText = parsedMode ? rest.trim() || prompt : prompt;
       setDraftMode(finalMode);
       handleSend(finalText, finalMode);
     }
@@ -199,19 +212,20 @@ function BuilderPage() {
     <main className="dark relative flex h-[100dvh] w-screen flex-col overflow-hidden bg-background text-foreground md:flex-row">
       {/* Mobile layout: simple show/hide */}
       <div
-        className={
-          "min-h-0 w-full md:hidden " +
-          (mobileView === "chat" ? "flex flex-1" : "hidden")
-        }
+        className={"min-h-0 w-full md:hidden " + (mobileView === "chat" ? "flex flex-1" : "hidden")}
       >
         <div className="h-full w-full">
-          <ChatPanel messages={messages} isLoading={isLoading} onSend={handleSend} onModeChange={setDraftMode} />
+          <ChatPanel
+            messages={messages}
+            isLoading={isLoading}
+            onSend={handleSend}
+            onModeChange={setDraftMode}
+          />
         </div>
       </div>
       <div
         className={
-          "min-h-0 w-full md:hidden " +
-          (mobileView === "preview" ? "flex flex-1" : "hidden")
+          "min-h-0 w-full md:hidden " + (mobileView === "preview" ? "flex flex-1" : "hidden")
         }
       >
         <div className="h-full w-full">
@@ -231,7 +245,12 @@ function BuilderPage() {
         <ResizablePanelGroup orientation="horizontal" className="h-full w-full">
           <ResizablePanel defaultSize="38%" minSize="22%" maxSize="60%" className="min-h-0">
             <div className="h-full w-full">
-              <ChatPanel messages={messages} isLoading={isLoading} onSend={handleSend} onModeChange={setDraftMode} />
+              <ChatPanel
+                messages={messages}
+                isLoading={isLoading}
+                onSend={handleSend}
+                onModeChange={setDraftMode}
+              />
             </div>
           </ResizablePanel>
           <ResizableHandle
@@ -263,9 +282,20 @@ function BuilderPage() {
           }
           aria-label="Settings"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+          >
             <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z" strokeLinecap="round" strokeLinejoin="round" />
+            <path
+              d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
         </button>
 
@@ -279,11 +309,21 @@ function BuilderPage() {
                 </div>
               ) : null}
               <button
-                onClick={() => { setSettingsOpen(false); openSaveDialog(); }}
+                onClick={() => {
+                  setSettingsOpen(false);
+                  openSaveDialog();
+                }}
                 disabled={!hasFiles}
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted disabled:opacity-40"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
                   <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" />
                   <path d="M17 21v-8H7v8M7 3v5h8" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -292,7 +332,10 @@ function BuilderPage() {
               <button
                 onClick={async () => {
                   setSettingsOpen(false);
-                  if (!hasFiles) { toast.error("Nothing to download yet."); return; }
+                  if (!hasFiles) {
+                    toast.error("Nothing to download yet.");
+                    return;
+                  }
                   try {
                     const JSZip = (await import("jszip")).default;
                     const zip = new JSZip();
@@ -316,8 +359,19 @@ function BuilderPage() {
                 disabled={!hasFiles}
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted disabled:opacity-40"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" strokeLinecap="round" strokeLinejoin="round" />
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <path
+                    d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
                 Download as ZIP
               </button>
@@ -326,8 +380,18 @@ function BuilderPage() {
                 onClick={() => setSettingsOpen(false)}
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" strokeLinejoin="round" />
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <path
+                    d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"
+                    strokeLinejoin="round"
+                  />
                 </svg>
                 My projects
               </Link>
@@ -336,7 +400,14 @@ function BuilderPage() {
                 onClick={() => setSettingsOpen(false)}
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
                   <circle cx="12" cy="12" r="9" />
                   <path d="M3 12h18M12 3a14 14 0 010 18M12 3a14 14 0 000 18" />
                 </svg>
@@ -351,18 +422,43 @@ function BuilderPage() {
                   }}
                   className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                    <path d="M16 17l5-5-5-5M21 12H9M13 21H5a2 2 0 01-2-2V5a2 2 0 012-2h8" strokeLinecap="round" strokeLinejoin="round" />
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                  >
+                    <path
+                      d="M16 17l5-5-5-5M21 12H9M13 21H5a2 2 0 01-2-2V5a2 2 0 012-2h8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                   Sign out
                 </button>
               ) : (
                 <button
-                  onClick={() => { setSettingsOpen(false); setAuthOpen(true); }}
+                  onClick={() => {
+                    setSettingsOpen(false);
+                    setAuthOpen(true);
+                  }}
                   className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                    <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" strokeLinecap="round" strokeLinejoin="round" />
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                  >
+                    <path
+                      d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                   Sign in
                 </button>
@@ -372,8 +468,19 @@ function BuilderPage() {
                 onClick={() => setSettingsOpen(false)}
                 className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-foreground transition-colors hover:bg-muted"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                  <path d="M3 12l9-9 9 9M5 10v10h14V10" strokeLinecap="round" strokeLinejoin="round" />
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.8"
+                >
+                  <path
+                    d="M3 12l9-9 9 9M5 10v10h14V10"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
                 Back to home
               </Link>
@@ -395,7 +502,9 @@ function BuilderPage() {
             <h2 className="text-lg font-semibold">Save project</h2>
             <p className="mt-1 text-xs text-muted-foreground">Stored in your account.</p>
 
-            <label className="mt-4 mb-1 block text-xs uppercase tracking-wider text-muted-foreground">Name</label>
+            <label className="mt-4 mb-1 block text-xs uppercase tracking-wider text-muted-foreground">
+              Name
+            </label>
             <input
               value={saveName}
               onChange={(e) => setSaveName(e.target.value)}
@@ -452,9 +561,7 @@ function BuilderPage() {
       <AuthDialog open={authOpen} onClose={() => setAuthOpen(false)} />
 
       {/* Floating mobile bottom pill — Chat / Preview */}
-      <div
-        className="pointer-events-none fixed inset-x-0 bottom-3 z-50 flex justify-center md:hidden"
-      >
+      <div className="pointer-events-none fixed inset-x-0 bottom-3 z-50 flex justify-center md:hidden">
         <div
           className="pointer-events-auto inline-flex items-center rounded-full border border-border/60 p-1 shadow-2xl backdrop-blur-md"
           style={{ background: "color-mix(in oklab, var(--builder-surface) 85%, transparent)" }}
@@ -480,7 +587,9 @@ function BuilderPage() {
                 : "text-muted-foreground")
             }
           >
-            {mobileView === "preview" && <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />}
+            {mobileView === "preview" && (
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            )}
             Preview
           </button>
         </div>

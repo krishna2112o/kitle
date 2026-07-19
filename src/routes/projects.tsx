@@ -72,16 +72,24 @@ function ProjectsPage() {
   return (
     <main className="dark min-h-screen bg-background text-foreground">
       <header className="mx-auto flex max-w-4xl items-center justify-between px-4 py-6">
-        <Link to="/" className="text-lg font-semibold">nuvic</Link>
+        <Link to="/" className="text-lg font-semibold">
+          nuvic
+        </Link>
         <div className="flex items-center gap-3 text-sm">
-          <Link to="/gallery" className="text-muted-foreground hover:text-foreground">Gallery</Link>
-          <Link to="/" className="text-muted-foreground hover:text-foreground">Home</Link>
+          <Link to="/gallery" className="text-muted-foreground hover:text-foreground">
+            Gallery
+          </Link>
+          <Link to="/" className="text-muted-foreground hover:text-foreground">
+            Home
+          </Link>
         </div>
       </header>
 
       <section className="mx-auto max-w-4xl px-4 pb-16">
         <h1 className="text-3xl font-semibold sm:text-4xl">My projects</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Saved in your account. Toggle public to share.</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Saved in your account. Toggle public to share.
+        </p>
 
         {!user && !authLoading && (
           <div className="mt-8 rounded-xl border border-border bg-card p-6 text-center">
@@ -97,7 +105,9 @@ function ProjectsPage() {
 
         {user && loading && <p className="mt-8 text-sm text-muted-foreground">Loading…</p>}
         {user && !loading && items.length === 0 && (
-          <p className="mt-8 text-sm text-muted-foreground">No projects yet — build something on the home page.</p>
+          <p className="mt-8 text-sm text-muted-foreground">
+            No projects yet — build something on the home page.
+          </p>
         )}
 
         {user && items.length > 0 && (
@@ -107,11 +117,7 @@ function ProjectsPage() {
                 key={p.id}
                 className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3"
               >
-                <Link
-                  to="/builder"
-                  search={{ saved: p.id }}
-                  className="min-w-0 flex-1"
-                >
+                <Link to="/builder" search={{ saved: p.id }} className="min-w-0 flex-1">
                   <div className="truncate text-sm font-medium">{p.name}</div>
                   <div className="text-[11px] text-muted-foreground">
                     {new Date(p.updated_at).toLocaleString()} ·{" "}
@@ -131,8 +137,19 @@ function ProjectsPage() {
                   className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
                   aria-label="Delete"
                 >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-                    <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M6 6l1 14a2 2 0 002 2h6a2 2 0 002-2l1-14" strokeLinecap="round" strokeLinejoin="round" />
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                  >
+                    <path
+                      d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M6 6l1 14a2 2 0 002 2h6a2 2 0 002-2l1-14"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </button>
               </li>

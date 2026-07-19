@@ -62,17 +62,14 @@ export const Route = createFileRoute("/api/public/netlify/deploy")({
           }
 
           const zipBuf = await request.arrayBuffer();
-          const deployRes = await fetch(
-            `https://api.netlify.com/api/v1/sites/${siteId}/deploys`,
-            {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/zip",
-              },
-              body: zipBuf,
+          const deployRes = await fetch(`https://api.netlify.com/api/v1/sites/${siteId}/deploys`, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/zip",
             },
-          );
+            body: zipBuf,
+          });
           if (!deployRes.ok) {
             const txt = await deployRes.text();
             return new Response(
@@ -88,10 +85,10 @@ export const Route = createFileRoute("/api/public/netlify/deploy")({
           };
           const deployUrl =
             deploy.deploy_ssl_url || deploy.deploy_url || deploy.ssl_url || deploy.url || null;
-          return new Response(
-            JSON.stringify({ ok: true, siteId, url: deployUrl }),
-            { status: 200, headers: cors },
-          );
+          return new Response(JSON.stringify({ ok: true, siteId, url: deployUrl }), {
+            status: 200,
+            headers: cors,
+          });
         } catch (e) {
           return new Response(
             JSON.stringify({ ok: false, error: e instanceof Error ? e.message : "unknown" }),

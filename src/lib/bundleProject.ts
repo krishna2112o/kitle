@@ -40,13 +40,25 @@ export async function bundleProject(
   const entry = ENTRY_CANDIDATES.find((c) => map.has(c));
   if (!entry) throw new Error("No entry file found (index.tsx / main.tsx).");
 
-  const EXT_TRIES = ["", ".tsx", ".ts", ".jsx", ".js", "/index.tsx", "/index.ts", "/index.jsx", "/index.js"];
+  const EXT_TRIES = [
+    "",
+    ".tsx",
+    ".ts",
+    ".jsx",
+    ".js",
+    "/index.tsx",
+    "/index.ts",
+    "/index.jsx",
+    "/index.js",
+  ];
 
   function resolveLocal(spec: string, importer: string): string | null {
     // Resolve relative imports
     let base = "";
     if (spec.startsWith(".")) {
-      const importerDir = importer.includes("/") ? importer.slice(0, importer.lastIndexOf("/")) : "";
+      const importerDir = importer.includes("/")
+        ? importer.slice(0, importer.lastIndexOf("/"))
+        : "";
       const parts = (importerDir ? importerDir + "/" : "").split("/").filter(Boolean);
       for (const seg of spec.split("/")) {
         if (seg === "." || seg === "") continue;
@@ -143,6 +155,6 @@ export async function bundleProject(
   return {
     "index.html": html,
     "assets/bundle.js": js,
-    "_redirects": "/*  /index.html  200",
+    _redirects: "/*  /index.html  200",
   };
 }

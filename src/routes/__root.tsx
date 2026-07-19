@@ -31,10 +31,16 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "AI App Builder" },
-      { name: "description", content: "Prompt-driven React + Vite + TypeScript app builder with live preview." },
+      {
+        name: "description",
+        content: "Prompt-driven React + Vite + TypeScript app builder with live preview.",
+      },
       { name: "author", content: "Lovable" },
       { property: "og:title", content: "AI App Builder" },
-      { property: "og:description", content: "Prompt-driven React + Vite + TypeScript app builder with live preview." },
+      {
+        property: "og:description",
+        content: "Prompt-driven React + Vite + TypeScript app builder with live preview.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },

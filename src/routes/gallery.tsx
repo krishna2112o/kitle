@@ -6,7 +6,10 @@ export const Route = createFileRoute("/gallery")({
   head: () => ({
     meta: [
       { title: "Public Gallery — nuvic" },
-      { name: "description", content: "Browse public AI-generated projects from the nuvic community." },
+      {
+        name: "description",
+        content: "Browse public AI-generated projects from the nuvic community.",
+      },
     ],
   }),
   component: GalleryPage,
@@ -27,10 +30,16 @@ function GalleryPage() {
   return (
     <main className="dark min-h-screen bg-background text-foreground">
       <header className="mx-auto flex max-w-5xl items-center justify-between px-4 py-6">
-        <Link to="/" className="text-lg font-semibold">nuvic</Link>
+        <Link to="/" className="text-lg font-semibold">
+          nuvic
+        </Link>
         <div className="flex gap-3 text-sm">
-          <Link to="/" className="text-muted-foreground hover:text-foreground">Home</Link>
-          <Link to="/builder" className="text-muted-foreground hover:text-foreground" search={{}}>Builder</Link>
+          <Link to="/" className="text-muted-foreground hover:text-foreground">
+            Home
+          </Link>
+          <Link to="/builder" className="text-muted-foreground hover:text-foreground" search={{}}>
+            Builder
+          </Link>
         </div>
       </header>
 
@@ -43,7 +52,9 @@ function GalleryPage() {
         {loading && <p className="mt-8 text-sm text-muted-foreground">Loading…</p>}
         {err && <p className="mt-8 text-sm text-destructive">{err}</p>}
         {!loading && !err && items.length === 0 && (
-          <p className="mt-8 text-sm text-muted-foreground">No public projects yet — be the first!</p>
+          <p className="mt-8 text-sm text-muted-foreground">
+            No public projects yet — be the first!
+          </p>
         )}
 
         <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -56,7 +67,9 @@ function GalleryPage() {
             >
               <div className="mb-3 aspect-[4/3] rounded-lg bg-gradient-to-br from-primary/20 to-muted" />
               <div className="text-sm font-medium">{p.name}</div>
-              <div className="text-[11px] text-muted-foreground">{new Date(p.updated_at).toLocaleDateString()}</div>
+              <div className="text-[11px] text-muted-foreground">
+                {new Date(p.updated_at).toLocaleDateString()}
+              </div>
               <span className="mt-3 text-xs text-foreground opacity-0 transition-opacity group-hover:opacity-100">
                 Open project →
               </span>

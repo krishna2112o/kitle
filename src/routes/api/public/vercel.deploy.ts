@@ -37,7 +37,11 @@ export const Route = createFileRoute("/api/public/vercel/deploy")({
         }
         const url = new URL(request.url);
         const rawName = (url.searchParams.get("name") || "lovable-app").toLowerCase();
-        const name = rawName.replace(/[^a-z0-9-]/g, "-").replace(/^-+|-+$/g, "").slice(0, 52) || "lovable-app";
+        const name =
+          rawName
+            .replace(/[^a-z0-9-]/g, "-")
+            .replace(/^-+|-+$/g, "")
+            .slice(0, 52) || "lovable-app";
 
         try {
           const { files } = (await request.json()) as { files: Record<string, string> };
@@ -81,10 +85,10 @@ export const Route = createFileRoute("/api/public/vercel/deploy")({
             );
           }
           const deployUrl = body.url ? `https://${body.url}` : null;
-          return new Response(
-            JSON.stringify({ ok: true, url: deployUrl }),
-            { status: 200, headers: cors },
-          );
+          return new Response(JSON.stringify({ ok: true, url: deployUrl }), {
+            status: 200,
+            headers: cors,
+          });
         } catch (e) {
           return new Response(
             JSON.stringify({ ok: false, error: e instanceof Error ? e.message : "unknown" }),

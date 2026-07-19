@@ -2,23 +2,58 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
-  ArrowLeft, Plus, Trash2, ExternalLink, Eye, EyeOff, ChevronUp, ChevronDown,
-  Globe, Instagram, Twitter, Youtube, Github, Linkedin, Music2, Facebook, Twitch,
-  Mail, Phone, ShoppingBag, Video, BookOpen, Star, Link2, Copy, User, Palette,
+  ArrowLeft,
+  Plus,
+  Trash2,
+  ExternalLink,
+  Eye,
+  EyeOff,
+  ChevronUp,
+  ChevronDown,
+  Globe,
+  Instagram,
+  Twitter,
+  Youtube,
+  Github,
+  Linkedin,
+  Music2,
+  Facebook,
+  Twitch,
+  Mail,
+  Phone,
+  ShoppingBag,
+  Video,
+  BookOpen,
+  Star,
+  Link2,
+  Copy,
+  User,
+  Palette,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthDialog } from "@/components/AuthDialog";
 import {
-  THEMES, ICONS, getMyProfile, upsertMyProfile, listMyLinks,
-  createLink, updateLink, deleteLink,
-  type LinkItem, type LinkProfile,
+  THEMES,
+  ICONS,
+  getMyProfile,
+  upsertMyProfile,
+  listMyLinks,
+  createLink,
+  updateLink,
+  deleteLink,
+  type LinkItem,
+  type LinkProfile,
 } from "@/lib/links";
 
 export const Route = createFileRoute("/links")({
   head: () => ({
     meta: [
       { title: "Link in bio — Manage your links" },
-      { name: "description", content: "Create a beautiful link-in-bio page. Manage your profile, add links, pick a theme." },
+      {
+        name: "description",
+        content:
+          "Create a beautiful link-in-bio page. Manage your profile, add links, pick a theme.",
+      },
       { property: "og:title", content: "Link in bio — Manage your links" },
       { property: "og:description", content: "A Linktree-style link-in-bio page you fully own." },
     ],
@@ -26,13 +61,38 @@ export const Route = createFileRoute("/links")({
   component: LinksPage,
 });
 
-const ICON_MAP: Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
-  link: Link2, globe: Globe, instagram: Instagram, twitter: Twitter, youtube: Youtube,
-  tiktok: Music2, github: Github, linkedin: Linkedin, spotify: Music2, facebook: Facebook,
-  twitch: Twitch, mail: Mail, phone: Phone, shop: ShoppingBag, music: Music2,
-  video: Video, book: BookOpen, star: Star,
+const ICON_MAP: Record<
+  string,
+  React.ComponentType<{ className?: string; style?: React.CSSProperties }>
+> = {
+  link: Link2,
+  globe: Globe,
+  instagram: Instagram,
+  twitter: Twitter,
+  youtube: Youtube,
+  tiktok: Music2,
+  github: Github,
+  linkedin: Linkedin,
+  spotify: Music2,
+  facebook: Facebook,
+  twitch: Twitch,
+  mail: Mail,
+  phone: Phone,
+  shop: ShoppingBag,
+  music: Music2,
+  video: Video,
+  book: BookOpen,
+  star: Star,
 };
-export function LinkIcon({ name, className, style }: { name: string; className?: string; style?: React.CSSProperties }) {
+export function LinkIcon({
+  name,
+  className,
+  style,
+}: {
+  name: string;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
   const C = ICON_MAP[name] ?? Link2;
   return <C className={className} style={style} />;
 }
@@ -93,7 +153,11 @@ function LinksPage() {
     setSavingProfile(true);
     try {
       const p = await upsertMyProfile({
-        username, display_name: displayName, bio, avatar_url: avatarUrl, theme,
+        username,
+        display_name: displayName,
+        bio,
+        avatar_url: avatarUrl,
+        theme,
       });
       setProfile(p);
       toast.success("Profile saved");
@@ -118,10 +182,15 @@ function LinksPage() {
     setAdding(true);
     try {
       const item = await createLink({
-        title: newTitle.trim(), url, icon: newIcon, position: links.length,
+        title: newTitle.trim(),
+        url,
+        icon: newIcon,
+        position: links.length,
       });
       setLinks((prev) => [...prev, item]);
-      setNewTitle(""); setNewUrl(""); setNewIcon("link");
+      setNewTitle("");
+      setNewUrl("");
+      setNewIcon("link");
       toast.success("Link added");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed");
@@ -133,7 +202,9 @@ function LinksPage() {
   const toggleActive = async (l: LinkItem) => {
     const active = !l.active;
     setLinks((prev) => prev.map((x) => (x.id === l.id ? { ...x, active } : x)));
-    try { await updateLink(l.id, { active }); } catch (e) {
+    try {
+      await updateLink(l.id, { active });
+    } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed");
       setLinks((prev) => prev.map((x) => (x.id === l.id ? { ...x, active: !active } : x)));
     }
@@ -143,7 +214,10 @@ function LinksPage() {
     if (!confirm("Delete this link?")) return;
     const prev = links;
     setLinks((p) => p.filter((x) => x.id !== id));
-    try { await deleteLink(id); toast.success("Deleted"); } catch (e) {
+    try {
+      await deleteLink(id);
+      toast.success("Deleted");
+    } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed");
       setLinks(prev);
     }
@@ -165,18 +239,25 @@ function LinksPage() {
 
   const editField = async (l: LinkItem, patch: Partial<LinkItem>) => {
     setLinks((prev) => prev.map((x) => (x.id === l.id ? { ...x, ...patch } : x)));
-    try { await updateLink(l.id, patch as never); } catch (e) {
+    try {
+      await updateLink(l.id, patch as never);
+    } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed");
     }
   };
 
-  const publicUrl = profile ? `${typeof window !== "undefined" ? window.location.origin : ""}/u/${profile.username}` : "";
+  const publicUrl = profile
+    ? `${typeof window !== "undefined" ? window.location.origin : ""}/u/${profile.username}`
+    : "";
 
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link to="/" className="inline-flex items-center gap-2 text-sm font-semibold tracking-tight">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-sm font-semibold tracking-tight"
+          >
             <ArrowLeft className="h-4 w-4" /> Home
           </Link>
           <div className="text-xs text-muted-foreground">Link in bio</div>
@@ -187,7 +268,8 @@ function LinksPage() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold tracking-tight md:text-4xl">Your link page</h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground md:text-base">
-            Build a beautiful link-in-bio page. Edit your profile, add links, pick a theme — share one URL everywhere.
+            Build a beautiful link-in-bio page. Edit your profile, add links, pick a theme — share
+            one URL everywhere.
           </p>
         </div>
 
@@ -213,7 +295,9 @@ function LinksPage() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <Field label="Username">
                     <div className="flex items-center overflow-hidden rounded-lg border border-border/60 bg-background/60 focus-within:border-primary/60">
-                      <span className="border-r border-border/60 bg-background/40 px-3 py-2 text-xs text-muted-foreground">/u/</span>
+                      <span className="border-r border-border/60 bg-background/40 px-3 py-2 text-xs text-muted-foreground">
+                        /u/
+                      </span>
                       <input
                         value={username}
                         onChange={(e) => setUsername(e.target.value.toLowerCase())}
@@ -223,10 +307,18 @@ function LinksPage() {
                     </div>
                   </Field>
                   <Field label="Display name">
-                    <TextInput value={displayName} onChange={setDisplayName} placeholder="Your name" />
+                    <TextInput
+                      value={displayName}
+                      onChange={setDisplayName}
+                      placeholder="Your name"
+                    />
                   </Field>
                   <Field label="Avatar URL" full>
-                    <TextInput value={avatarUrl} onChange={setAvatarUrl} placeholder="https://…/photo.jpg" />
+                    <TextInput
+                      value={avatarUrl}
+                      onChange={setAvatarUrl}
+                      placeholder="https://…/photo.jpg"
+                    />
                   </Field>
                   <Field label="Bio" full>
                     <textarea
@@ -246,10 +338,15 @@ function LinksPage() {
                           type="button"
                           onClick={() => setTheme(t.id)}
                           className={`group flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition ${
-                            theme === t.id ? "border-primary bg-primary/10" : "border-border/60 hover:border-primary/60"
+                            theme === t.id
+                              ? "border-primary bg-primary/10"
+                              : "border-border/60 hover:border-primary/60"
                           }`}
                         >
-                          <span className="h-4 w-4 rounded-full border border-border/60" style={{ background: t.bg }} />
+                          <span
+                            className="h-4 w-4 rounded-full border border-border/60"
+                            style={{ background: t.bg }}
+                          />
                           {t.label}
                         </button>
                       ))}
@@ -261,10 +358,15 @@ function LinksPage() {
                   {profile && (
                     <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                       <Palette className="h-3.5 w-3.5" /> Live at
-                      <code className="rounded bg-background/60 px-2 py-1 text-foreground">/u/{profile.username}</code>
+                      <code className="rounded bg-background/60 px-2 py-1 text-foreground">
+                        /u/{profile.username}
+                      </code>
                       <button
                         type="button"
-                        onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success("Link copied"); }}
+                        onClick={() => {
+                          navigator.clipboard.writeText(publicUrl);
+                          toast.success("Link copied");
+                        }}
                         className="inline-flex items-center gap-1 rounded-md border border-border/60 px-2 py-1 hover:border-primary/60"
                       >
                         <Copy className="h-3 w-3" /> Copy
@@ -296,7 +398,11 @@ function LinksPage() {
                   <h2 className="text-lg font-semibold">Add a link</h2>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
-                  <TextInput value={newTitle} onChange={setNewTitle} placeholder="Title (e.g. My YouTube)" />
+                  <TextInput
+                    value={newTitle}
+                    onChange={setNewTitle}
+                    placeholder="Title (e.g. My YouTube)"
+                  />
                   <TextInput value={newUrl} onChange={setNewUrl} placeholder="https://…" />
                   <IconPicker value={newIcon} onChange={setNewIcon} />
                 </div>
@@ -309,7 +415,9 @@ function LinksPage() {
                   <Plus className="h-4 w-4" /> {adding ? "Adding…" : "Add link"}
                 </button>
                 {!profile && (
-                  <p className="mt-2 text-xs text-muted-foreground">Save your profile above first.</p>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Save your profile above first.
+                  </p>
                 )}
               </section>
 
@@ -331,10 +439,20 @@ function LinksPage() {
                       >
                         <div className="flex items-center gap-3">
                           <div className="flex flex-col">
-                            <button type="button" onClick={() => move(i, -1)} disabled={i === 0} className="rounded p-1 hover:bg-muted/50 disabled:opacity-30">
+                            <button
+                              type="button"
+                              onClick={() => move(i, -1)}
+                              disabled={i === 0}
+                              className="rounded p-1 hover:bg-muted/50 disabled:opacity-30"
+                            >
                               <ChevronUp className="h-3.5 w-3.5" />
                             </button>
-                            <button type="button" onClick={() => move(i, 1)} disabled={i === links.length - 1} className="rounded p-1 hover:bg-muted/50 disabled:opacity-30">
+                            <button
+                              type="button"
+                              onClick={() => move(i, 1)}
+                              disabled={i === links.length - 1}
+                              className="rounded p-1 hover:bg-muted/50 disabled:opacity-30"
+                            >
                               <ChevronDown className="h-3.5 w-3.5" />
                             </button>
                           </div>
@@ -342,8 +460,16 @@ function LinksPage() {
                             <LinkIcon name={l.icon} className="h-4 w-4" />
                           </div>
                           <div className="grid flex-1 gap-1.5">
-                            <TextInput value={l.title} onChange={(v) => editField(l, { title: v })} placeholder="Title" />
-                            <TextInput value={l.url} onChange={(v) => editField(l, { url: v })} placeholder="URL" />
+                            <TextInput
+                              value={l.title}
+                              onChange={(v) => editField(l, { title: v })}
+                              placeholder="Title"
+                            />
+                            <TextInput
+                              value={l.url}
+                              onChange={(v) => editField(l, { url: v })}
+                              placeholder="URL"
+                            />
                           </div>
                           <IconPicker value={l.icon} onChange={(v) => editField(l, { icon: v })} />
                           <div className="flex flex-col items-center gap-1 text-xs text-muted-foreground">
@@ -357,7 +483,11 @@ function LinksPage() {
                               title={l.active ? "Hide" : "Show"}
                               className="rounded-lg border border-border/60 p-2 transition hover:border-primary/60"
                             >
-                              {l.active ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                              {l.active ? (
+                                <Eye className="h-4 w-4" />
+                              ) : (
+                                <EyeOff className="h-4 w-4" />
+                              )}
                             </button>
                             <button
                               type="button"
@@ -379,7 +509,9 @@ function LinksPage() {
             {/* RIGHT: preview */}
             <aside className="lg:sticky lg:top-24 lg:self-start">
               <div className="rounded-2xl border border-border/60 bg-card/40 p-4">
-                <div className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">Live preview</div>
+                <div className="mb-3 text-xs uppercase tracking-widest text-muted-foreground">
+                  Live preview
+                </div>
                 <PhonePreview
                   profile={{
                     username: username || "you",
@@ -401,16 +533,34 @@ function LinksPage() {
   );
 }
 
-function Field({ label, full, children }: { label: string; full?: boolean; children: React.ReactNode }) {
+function Field({
+  label,
+  full,
+  children,
+}: {
+  label: string;
+  full?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <label className={`block ${full ? "sm:col-span-2" : ""}`}>
-      <div className="mb-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</div>
+      <div className="mb-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        {label}
+      </div>
       {children}
     </label>
   );
 }
 
-function TextInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) {
+function TextInput({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder?: string;
+}) {
   return (
     <input
       value={value}
@@ -429,16 +579,25 @@ function IconPicker({ value, onChange }: { value: string; onChange: (v: string) 
       className="rounded-lg border border-border/60 bg-background/60 px-2 py-2 text-sm outline-none focus:border-primary/60"
     >
       {ICONS.map((i) => (
-        <option key={i} value={i}>{i}</option>
+        <option key={i} value={i}>
+          {i}
+        </option>
       ))}
     </select>
   );
 }
 
 function PhonePreview({
-  profile, links,
+  profile,
+  links,
 }: {
-  profile: { username: string; display_name: string; bio: string; avatar_url: string; theme: string };
+  profile: {
+    username: string;
+    display_name: string;
+    bio: string;
+    avatar_url: string;
+    theme: string;
+  };
   links: LinkItem[];
 }) {
   const t = THEMES.find((x) => x.id === profile.theme) ?? THEMES[0];
@@ -451,7 +610,11 @@ function PhonePreview({
         <div className="flex flex-col items-center text-center">
           {profile.avatar_url ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={profile.avatar_url} alt="" className="h-20 w-20 rounded-full object-cover ring-2 ring-white/30" />
+            <img
+              src={profile.avatar_url}
+              alt=""
+              className="h-20 w-20 rounded-full object-cover ring-2 ring-white/30"
+            />
           ) : (
             <div className="grid h-20 w-20 place-items-center rounded-full bg-white/10 text-2xl font-bold ring-2 ring-white/20">
               {(profile.display_name || profile.username).slice(0, 1).toUpperCase()}
@@ -463,7 +626,9 @@ function PhonePreview({
         </div>
         <div className="mt-6 space-y-2.5">
           {links.length === 0 ? (
-            <div className="rounded-xl border border-white/10 py-8 text-center text-xs opacity-60">No links yet</div>
+            <div className="rounded-xl border border-white/10 py-8 text-center text-xs opacity-60">
+              No links yet
+            </div>
           ) : (
             links.map((l) => (
               <div

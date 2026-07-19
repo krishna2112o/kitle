@@ -99,9 +99,14 @@ export function NetlifyDeployDialog({ open, onClose, files }: Props) {
   };
 
   const handleOAuthConnect = () => {
-    const w = 620, h = 720;
-    const y = window.top?.outerHeight ? Math.max(0, ((window.top.outerHeight - h) / 2) + (window.top.screenY || 0)) : 100;
-    const x = window.top?.outerWidth ? Math.max(0, ((window.top.outerWidth - w) / 2) + (window.top.screenX || 0)) : 100;
+    const w = 620,
+      h = 720;
+    const y = window.top?.outerHeight
+      ? Math.max(0, (window.top.outerHeight - h) / 2 + (window.top.screenY || 0))
+      : 100;
+    const x = window.top?.outerWidth
+      ? Math.max(0, (window.top.outerWidth - w) / 2 + (window.top.screenX || 0))
+      : 100;
     const popup = window.open(
       "/api/public/netlify/start",
       "netlify-oauth",
@@ -117,7 +122,9 @@ export function NetlifyDeployDialog({ open, onClose, files }: Props) {
       window.removeEventListener("message", onMessage);
       if (data.ok && data.access_token) {
         setToken(data.access_token);
-        try { localStorage.setItem(TOKEN_KEY, data.access_token); } catch {}
+        try {
+          localStorage.setItem(TOKEN_KEY, data.access_token);
+        } catch {}
         toast.success("Connected to Netlify");
       } else {
         toast.error(`Netlify sign-in failed: ${data.error ?? "unknown"}`);
@@ -223,7 +230,8 @@ export function NetlifyDeployDialog({ open, onClose, files }: Props) {
             {existingSiteId && (
               <div className="flex items-center justify-between rounded-md border border-border/60 bg-muted/40 px-3 py-2 text-xs">
                 <span className="truncate text-muted-foreground">
-                  Re-deploying to site <code className="text-foreground">{existingSiteId.slice(0, 8)}…</code>
+                  Re-deploying to site{" "}
+                  <code className="text-foreground">{existingSiteId.slice(0, 8)}…</code>
                 </span>
                 <button
                   onClick={() => {

@@ -64,7 +64,10 @@ export const PROVIDERS: Record<ProviderId, ProviderDef> = {
     keyHint: "From console.anthropic.com.",
     keyUrl: "https://console.anthropic.com/settings/keys",
     authHeader: "x-api-key",
-    extraHeaders: { "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" },
+    extraHeaders: {
+      "anthropic-version": "2023-06-01",
+      "anthropic-dangerous-direct-browser-access": "true",
+    },
     supportsTools: true,
   },
   mistral: {
@@ -73,7 +76,12 @@ export const PROVIDERS: Record<ProviderId, ProviderDef> = {
     short: "Mistral",
     endpoint: "https://api.mistral.ai/v1/chat/completions",
     defaultModel: "mistral-small-latest",
-    models: ["mistral-small-latest", "mistral-large-latest", "open-mistral-nemo", "codestral-latest"],
+    models: [
+      "mistral-small-latest",
+      "mistral-large-latest",
+      "open-mistral-nemo",
+      "codestral-latest",
+    ],
     keyPlaceholder: "…",
     keyHint: "From console.mistral.ai.",
     keyUrl: "https://console.mistral.ai/api-keys/",

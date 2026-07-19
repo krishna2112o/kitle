@@ -1,11 +1,13 @@
-import { Globe, BarChart3, GraduationCap, MessageSquare, PenLine, type LucideIcon } from "lucide-react";
+import {
+  Globe,
+  BarChart3,
+  GraduationCap,
+  MessageSquare,
+  PenLine,
+  type LucideIcon,
+} from "lucide-react";
 
-export type ChatMode =
-  | "website"
-  | "data-analysis"
-  | "education"
-  | "chat"
-  | "content";
+export type ChatMode = "website" | "data-analysis" | "education" | "chat" | "content";
 
 export type ModeDef = {
   id: ChatMode;

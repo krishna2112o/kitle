@@ -16,6 +16,10 @@ export default defineConfig({
     port: 5000,
     strictPort: true,
     allowedHosts: true,
+    headers: {
+      "Cross-Origin-Embedder-Policy": "require-corp",
+      "Cross-Origin-Opener-Policy": "same-origin",
+    },
   },
   resolve: {
     alias: {
