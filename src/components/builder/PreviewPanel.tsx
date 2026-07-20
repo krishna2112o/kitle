@@ -12,6 +12,7 @@ import {
   MessageSquare,
   FileCode,
   FolderOpen,
+  TerminalSquare,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -19,6 +20,7 @@ import JSZip from "jszip";
 import { BentoLoader } from "./BentoLoader";
 import { NetlifyDeployDialog } from "./NetlifyDeployDialog";
 import { VercelDeployDialog } from "./VercelDeployDialog";
+import { WebContainerTerminal } from "./WebContainerTerminal";
 import { MODES, type ChatMode } from "@/lib/modes";
 import { getWebContainer, ensureDirAndWriteFile, buildFileSystemTree } from "@/lib/webcontainer";
 
@@ -37,7 +39,7 @@ interface Props {
   onSettings?: () => void;
 }
 
-type Tab = "preview" | "code";
+type Tab = "preview" | "code" | "terminal";
 
 /** Strip leading slash so paths are normalized */
 function normalizeFiles(files: Record<string, string>): Record<string, string> {
@@ -382,6 +384,20 @@ export default defineConfig({
               Code
             </button>
           )}
+          {isSandbox && (
+            <button
+              onClick={() => setTab("terminal")}
+              className={
+                "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1 text-[11px] font-medium transition-all " +
+                (tab === "terminal"
+                  ? "bg-foreground text-background shadow-sm"
+                  : "text-muted-foreground hover:text-foreground")
+              }
+            >
+              <TerminalSquare className="h-3 w-3 md:hidden" />
+              Terminal
+            </button>
+          )}
         </div>
 
         {/* Right-side actions */}
@@ -549,6 +565,18 @@ export default defineConfig({
                     Initializing preview URL...
                   </div>
                 )}
+              </div>
+
+              {/* Terminal — always mounted so the shell session persists across tabs */}
+              <div
+                style={{
+                  flex: 1,
+                  minHeight: 0,
+                  display: tab === "terminal" ? "flex" : "none",
+                  flexDirection: "column",
+                }}
+              >
+                <WebContainerTerminal visible={tab === "terminal"} />
               </div>
 
               {/* Code tab — custom file tree + viewer */}
