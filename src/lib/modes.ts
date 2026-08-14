@@ -1,13 +1,11 @@
-import {
-  Globe,
-  BarChart3,
-  GraduationCap,
-  MessageSquare,
-  PenLine,
-  type LucideIcon,
-} from "lucide-react";
+import { Globe, BarChart3, GraduationCap, MessageSquare, PenLine, type LucideIcon } from "lucide-react";
 
-export type ChatMode = "website" | "data-analysis" | "education" | "chat" | "content";
+export type ChatMode =
+  | "website"
+  | "data-analysis"
+  | "education"
+  | "chat"
+  | "content";
 
 export type ModeDef = {
   id: ChatMode;
@@ -38,7 +36,7 @@ export const MODES: Record<ChatMode, ModeDef> = {
     description: "Build a polished multi-page React + Vite website",
     icon: Globe,
     outputs: "files",
-    systemPrompt: `You are a senior product engineer + designer building AMBITIOUS, polished, multi-page React + TypeScript + Vite apps that run inside a StackBlitz WebContainers "react-ts" sandbox.
+    systemPrompt: `You are a senior product engineer + designer building AMBITIOUS, polished, multi-page React + TypeScript + Vite apps that run inside a Sandpack "react-ts" sandbox.
 
 ${BASE_BUILD_RULES}
 

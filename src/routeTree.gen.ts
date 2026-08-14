@@ -9,46 +9,26 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as AnalyzeRouteImport } from './routes/analyze'
-import { Route as BuilderRouteImport } from './routes/builder'
-import { Route as GalleryRouteImport } from './routes/gallery'
-import { Route as LinksRouteImport } from './routes/links'
-import { Route as McpRouteImport } from './routes/mcp'
 import { Route as ProjectsRouteImport } from './routes/projects'
-import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
-import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
-import { Route as PIdRouteImport } from './routes/p.$id'
+import { Route as McpRouteImport } from './routes/mcp'
+import { Route as LinksRouteImport } from './routes/links'
+import { Route as GalleryRouteImport } from './routes/gallery'
+import { Route as BuilderRouteImport } from './routes/builder'
+import { Route as AnalyzeRouteImport } from './routes/analyze'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as UUsernameRouteImport } from './routes/u.$username'
+import { Route as PIdRouteImport } from './routes/p.$id'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
-import { Route as ApiPublicNetlifyCallbackRouteImport } from './routes/api/public/netlify.callback'
-import { Route as ApiPublicNetlifyDeployRouteImport } from './routes/api/public/netlify.deploy'
-import { Route as ApiPublicNetlifyStartRouteImport } from './routes/api/public/netlify.start'
 import { Route as ApiPublicVercelDeployRouteImport } from './routes/api/public/vercel.deploy'
+import { Route as ApiPublicNetlifyStartRouteImport } from './routes/api/public/netlify.start'
+import { Route as ApiPublicNetlifyDeployRouteImport } from './routes/api/public/netlify.deploy'
+import { Route as ApiPublicNetlifyCallbackRouteImport } from './routes/api/public/netlify.callback'
 
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AnalyzeRoute = AnalyzeRouteImport.update({
-  id: '/analyze',
-  path: '/analyze',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BuilderRoute = BuilderRouteImport.update({
-  id: '/builder',
-  path: '/builder',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GalleryRoute = GalleryRouteImport.update({
-  id: '/gallery',
-  path: '/gallery',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LinksRoute = LinksRouteImport.update({
-  id: '/links',
-  path: '/links',
+const ProjectsRoute = ProjectsRouteImport.update({
+  id: '/projects',
+  path: '/projects',
   getParentRoute: () => rootRouteImport,
 } as any)
 const McpRoute = McpRouteImport.update({
@@ -56,26 +36,29 @@ const McpRoute = McpRouteImport.update({
   path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProjectsRoute = ProjectsRouteImport.update({
-  id: '/projects',
-  path: '/projects',
+const LinksRoute = LinksRouteImport.update({
+  id: '/links',
+  path: '/links',
   getParentRoute: () => rootRouteImport,
 } as any)
-const Char91DotmcpChar93ListToolsRoute =
-  Char91DotmcpChar93ListToolsRouteImport.update({
-    id: '/.mcp/list-tools',
-    path: '/.mcp/list-tools',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const Char91DotwellKnownChar93OauthProtectedResourceRoute =
-  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
-    id: '/.well-known/oauth-protected-resource',
-    path: '/.well-known/oauth-protected-resource',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const PIdRoute = PIdRouteImport.update({
-  id: '/p/$id',
-  path: '/p/$id',
+const GalleryRoute = GalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BuilderRoute = BuilderRouteImport.update({
+  id: '/builder',
+  path: '/builder',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalyzeRoute = AnalyzeRouteImport.update({
+  id: '/analyze',
+  path: '/analyze',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UUsernameRoute = UUsernameRouteImport.update({
@@ -83,21 +66,32 @@ const UUsernameRoute = UUsernameRouteImport.update({
   path: '/u/$username',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PIdRoute = PIdRouteImport.update({
+  id: '/p/$id',
+  path: '/p/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
     path: '/.mcp/invoke-tool/$tool',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicNetlifyCallbackRoute =
-  ApiPublicNetlifyCallbackRouteImport.update({
-    id: '/api/public/netlify/callback',
-    path: '/api/public/netlify/callback',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicNetlifyDeployRoute = ApiPublicNetlifyDeployRouteImport.update({
-  id: '/api/public/netlify/deploy',
-  path: '/api/public/netlify/deploy',
+const ApiPublicVercelDeployRoute = ApiPublicVercelDeployRouteImport.update({
+  id: '/api/public/vercel/deploy',
+  path: '/api/public/vercel/deploy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicNetlifyStartRoute = ApiPublicNetlifyStartRouteImport.update({
@@ -105,11 +99,17 @@ const ApiPublicNetlifyStartRoute = ApiPublicNetlifyStartRouteImport.update({
   path: '/api/public/netlify/start',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicVercelDeployRoute = ApiPublicVercelDeployRouteImport.update({
-  id: '/api/public/vercel/deploy',
-  path: '/api/public/vercel/deploy',
+const ApiPublicNetlifyDeployRoute = ApiPublicNetlifyDeployRouteImport.update({
+  id: '/api/public/netlify/deploy',
+  path: '/api/public/netlify/deploy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicNetlifyCallbackRoute =
+  ApiPublicNetlifyCallbackRouteImport.update({
+    id: '/api/public/netlify/callback',
+    path: '/api/public/netlify/callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -244,39 +244,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/analyze': {
-      id: '/analyze'
-      path: '/analyze'
-      fullPath: '/analyze'
-      preLoaderRoute: typeof AnalyzeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/builder': {
-      id: '/builder'
-      path: '/builder'
-      fullPath: '/builder'
-      preLoaderRoute: typeof BuilderRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gallery': {
-      id: '/gallery'
-      path: '/gallery'
-      fullPath: '/gallery'
-      preLoaderRoute: typeof GalleryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/links': {
-      id: '/links'
-      path: '/links'
-      fullPath: '/links'
-      preLoaderRoute: typeof LinksRouteImport
+    '/projects': {
+      id: '/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof ProjectsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mcp': {
@@ -286,32 +258,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/projects': {
-      id: '/projects'
-      path: '/projects'
-      fullPath: '/projects'
-      preLoaderRoute: typeof ProjectsRouteImport
+    '/links': {
+      id: '/links'
+      path: '/links'
+      fullPath: '/links'
+      preLoaderRoute: typeof LinksRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/.mcp/list-tools': {
-      id: '/.mcp/list-tools'
-      path: '/.mcp/list-tools'
-      fullPath: '/.mcp/list-tools'
-      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+    '/gallery': {
+      id: '/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof GalleryRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/.well-known/oauth-protected-resource': {
-      id: '/.well-known/oauth-protected-resource'
-      path: '/.well-known/oauth-protected-resource'
-      fullPath: '/.well-known/oauth-protected-resource'
-      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+    '/builder': {
+      id: '/builder'
+      path: '/builder'
+      fullPath: '/builder'
+      preLoaderRoute: typeof BuilderRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/p/$id': {
-      id: '/p/$id'
-      path: '/p/$id'
-      fullPath: '/p/$id'
-      preLoaderRoute: typeof PIdRouteImport
+    '/analyze': {
+      id: '/analyze'
+      path: '/analyze'
+      fullPath: '/analyze'
+      preLoaderRoute: typeof AnalyzeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/u/$username': {
@@ -321,6 +300,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/p/$id': {
+      id: '/p/$id'
+      path: '/p/$id'
+      fullPath: '/p/$id'
+      preLoaderRoute: typeof PIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/list-tools': {
+      id: '/.mcp/list-tools'
+      path: '/.mcp/list-tools'
+      fullPath: '/.mcp/list-tools'
+      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
       path: '/.mcp/invoke-tool/$tool'
@@ -328,18 +328,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/netlify/callback': {
-      id: '/api/public/netlify/callback'
-      path: '/api/public/netlify/callback'
-      fullPath: '/api/public/netlify/callback'
-      preLoaderRoute: typeof ApiPublicNetlifyCallbackRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/netlify/deploy': {
-      id: '/api/public/netlify/deploy'
-      path: '/api/public/netlify/deploy'
-      fullPath: '/api/public/netlify/deploy'
-      preLoaderRoute: typeof ApiPublicNetlifyDeployRouteImport
+    '/api/public/vercel/deploy': {
+      id: '/api/public/vercel/deploy'
+      path: '/api/public/vercel/deploy'
+      fullPath: '/api/public/vercel/deploy'
+      preLoaderRoute: typeof ApiPublicVercelDeployRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/netlify/start': {
@@ -349,11 +342,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicNetlifyStartRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/vercel/deploy': {
-      id: '/api/public/vercel/deploy'
-      path: '/api/public/vercel/deploy'
-      fullPath: '/api/public/vercel/deploy'
-      preLoaderRoute: typeof ApiPublicVercelDeployRouteImport
+    '/api/public/netlify/deploy': {
+      id: '/api/public/netlify/deploy'
+      path: '/api/public/netlify/deploy'
+      fullPath: '/api/public/netlify/deploy'
+      preLoaderRoute: typeof ApiPublicNetlifyDeployRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/netlify/callback': {
+      id: '/api/public/netlify/callback'
+      path: '/api/public/netlify/callback'
+      fullPath: '/api/public/netlify/callback'
+      preLoaderRoute: typeof ApiPublicNetlifyCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
