@@ -19,8 +19,8 @@ import JSZip from "jszip";
 import { BentoLoader } from "./BentoLoader";
 import { NetlifyDeployDialog } from "./NetlifyDeployDialog";
 import { VercelDeployDialog } from "./VercelDeployDialog";
-import sdk, { type VM } from "@stackblitz/sdk";
 import { MODES, type ChatMode } from "@/lib/modes";
+import { getWebContainer, ensureDirAndWriteFile, buildFileSystemTree } from "@/lib/webcontainer";
 
 interface Props {
   files: Record<string, string>;
@@ -64,79 +64,6 @@ function langLabel(filename: string): string {
   return map[ext] ?? "text";
 }
 
-/** Inject standard Vite + React config files when the project omits them. */
-function withDefaultConfig(files: Record<string, string>): Record<string, string> {
-  const combined: Record<string, string> = { ...files };
-
-  if (!combined["package.json"]) {
-    combined["package.json"] = JSON.stringify(
-      {
-        name: "vite-react-app",
-        private: true,
-        version: "0.0.0",
-        type: "module",
-        scripts: {
-          dev: "vite --host",
-          build: "tsc && vite build",
-          preview: "vite preview",
-        },
-        dependencies: {
-          react: "^18.3.1",
-          "react-dom": "^18.3.1",
-          "lucide-react": "^0.395.0",
-        },
-        devDependencies: {
-          "@types/react": "^18.3.3",
-          "@types/react-dom": "^18.3.0",
-          "@vitejs/plugin-react": "^4.3.1",
-          typescript: "^5.2.2",
-          vite: "^5.3.1",
-        },
-      },
-      null,
-      2,
-    );
-  }
-
-  if (!combined["vite.config.ts"]) {
-    combined["vite.config.ts"] = `import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
-
-export default defineConfig({
-  plugins: [react()],
-});`;
-  }
-
-  if (!combined["tsconfig.json"]) {
-    combined["tsconfig.json"] = JSON.stringify(
-      {
-        compilerOptions: {
-          target: "ES2020",
-          useDefineForClassFields: true,
-          lib: ["DOM", "DOM.Iterable", "ES2020"],
-          module: "ESNext",
-          skipLibCheck: true,
-          moduleResolution: "bundler",
-          allowImportingTsExtensions: true,
-          resolveJsonModule: true,
-          isolatedModules: true,
-          noEmit: true,
-          jsx: "react-jsx",
-          strict: true,
-          noUnusedLocals: false,
-          noUnusedParameters: false,
-          noFallthroughCasesInSwitch: true,
-        },
-        include: ["."],
-      },
-      null,
-      2,
-    );
-  }
-
-  return combined;
-}
-
 async function downloadAsZip(files: Record<string, string>) {
   const zip = new JSZip();
   Object.entries(files).forEach(([path, content]) => {
@@ -168,13 +95,14 @@ export function PreviewPanel({
   const [vercelOpen, setVercelOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
 
-  // StackBlitz WebContainer preview state
-  const [sbState, setSbState] = useState<"idle" | "embedding" | "ready" | "error">("idle");
-  const [sbError, setSbError] = useState<string | null>(null);
+  // WebContainer preview state
+  const [wcState, setWcState] = useState<
+    "idle" | "booting" | "mounting" | "installing" | "starting" | "ready" | "error"
+  >("idle");
+  const [wcError, setWcError] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
 
-  const vmRef = useRef<VM | null>(null);
-  const embedContainerRef = useRef<HTMLDivElement | null>(null);
-  const isSbInitializedRef = useRef(false);
+  const isWcInitializedRef = useRef(false);
   const mountedFilesRef = useRef<Record<string, string>>({});
 
   const isSandbox = mode === "website";
@@ -182,7 +110,7 @@ export function PreviewPanel({
   const hasFiles = Object.keys(files).length > 0;
   const hasText = assistantText.trim().length > 0;
 
-  const isWcLoading = isSandbox && hasFiles && sbState !== "ready" && sbState !== "error";
+  const isWcLoading = isSandbox && hasFiles && wcState !== "ready" && wcState !== "error";
   const showLoader = (isLoading || isWcLoading) && tab === "preview";
 
   const normalizedFiles = normalizeFiles(files);
@@ -195,97 +123,196 @@ export function PreviewPanel({
     }
   }, [fileList.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Embed or hot-update the StackBlitz WebContainer when files change
+  // Boot or hot-update WebContainer when files change
   useEffect(() => {
     if (!isSandbox || !hasFiles) return;
 
     let active = true;
 
-    async function initStackBlitz() {
-      // Warm update: diff files and push them into the running VM
-      if (isSbInitializedRef.current) {
-        const vm = vmRef.current;
-        if (!vm) return;
-        try {
-          const lastFiles = mountedFilesRef.current;
-          const create: Record<string, string> = {};
-          const destroy: string[] = [];
-
-          for (const [path, content] of Object.entries(normalizedFiles)) {
-            if (lastFiles[path] !== content) create[path] = content;
-          }
-          for (const path of Object.keys(lastFiles)) {
-            if (!(path in normalizedFiles)) destroy.push(path);
-          }
-
-          if (Object.keys(create).length > 0 || destroy.length > 0) {
-            await vm.applyFsDiff({ create, destroy });
-          }
-          mountedFilesRef.current = { ...normalizedFiles };
-        } catch (err) {
-          console.error("StackBlitz incremental update failed", err);
+    async function initWebContainer() {
+      // 1. Check for Cross-Origin Isolation (COOP and COEP) headers
+      if (typeof window !== "undefined" && !window.crossOriginIsolated) {
+        if (active) {
+          setWcState("error");
+          setWcError(
+            "Security block: window.crossOriginIsolated is false.\n\n" +
+              "WebContainers require Cross-Origin Opener Policy (COOP) and Cross-Origin Embedder Policy (COEP) headers to run.\n" +
+              "Please ensure that your local server or production hosting serves the correct security headers.",
+          );
         }
         return;
       }
 
-      // First embed — build the project and boot it inside StackBlitz
-      isSbInitializedRef.current = true;
-      setSbState("embedding");
+      if (isWcInitializedRef.current) {
+        // Warm update: diff and patch via direct file system writes
+        try {
+          const wc = await getWebContainer();
+          const lastFiles = mountedFilesRef.current;
+
+          // Check if package.json has changed
+          const prevPkg = lastFiles["package.json"];
+          const nextPkg = normalizedFiles["package.json"];
+          const packageJsonChanged =
+            prevPkg !== undefined && nextPkg !== undefined && prevPkg !== nextPkg;
+
+          // Write new/changed files
+          for (const [path, content] of Object.entries(normalizedFiles)) {
+            if (lastFiles[path] !== content) {
+              await ensureDirAndWriteFile(wc, path, content);
+            }
+          }
+
+          // Delete removed files
+          for (const path of Object.keys(lastFiles)) {
+            if (!(path in normalizedFiles)) {
+              try {
+                await wc.fs.rm(path);
+              } catch (e) {
+                // Ignore if already deleted
+              }
+            }
+          }
+
+          mountedFilesRef.current = { ...normalizedFiles };
+
+          // Re-install if package.json changed
+          if (packageJsonChanged && active) {
+            setWcState("installing");
+            const installProcess = await wc.spawn("npm", ["install"]);
+            const exitCode = await installProcess.exit;
+            if (exitCode === 0 && active) {
+              setWcState("ready");
+            }
+          }
+        } catch (err) {
+          console.error("Incremental update failed", err);
+        }
+        return;
+      }
+
+      // First mount — boot, mount, npm install, and start dev server
+      isWcInitializedRef.current = true;
+      setWcState("booting");
 
       try {
-        const combined = withDefaultConfig(normalizedFiles);
-        const openFile =
-          Object.keys(combined).find((p) => /^src\/App\.(t|j)sx?$/.test(p)) ??
-          Object.keys(combined).find((p) => /^src\//.test(p)) ??
-          Object.keys(combined)[0];
+        const wc = await getWebContainer();
+        if (!active) return;
 
-        const container = embedContainerRef.current;
-        if (!container) return;
+        setWcState("mounting");
 
-        // Embed into a throwaway child so StackBlitz can replace it without
-        // fighting React's ownership of the container element.
-        container.innerHTML = "";
-        const target = document.createElement("div");
-        target.style.height = "100%";
-        target.style.width = "100%";
-        container.appendChild(target);
+        // Inject standard default configurations if missing
+        const combined: Record<string, string> = { ...normalizedFiles };
+        if (!combined["package.json"]) {
+          combined["package.json"] = JSON.stringify(
+            {
+              name: "vite-react-app",
+              private: true,
+              version: "0.0.0",
+              type: "module",
+              scripts: {
+                dev: "vite --host",
+                build: "tsc && vite build",
+                preview: "vite preview",
+              },
+              dependencies: {
+                react: "^18.3.1",
+                "react-dom": "^18.3.1",
+                "lucide-react": "^0.395.0",
+              },
+              devDependencies: {
+                "@types/react": "^18.3.3",
+                "@types/react-dom": "^18.3.0",
+                "@vitejs/plugin-react": "^4.3.1",
+                typescript: "^5.2.2",
+                vite: "^5.3.1",
+              },
+            },
+            null,
+            2,
+          );
+        }
+        if (!combined["vite.config.ts"]) {
+          combined["vite.config.ts"] = `import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
-        const vm = await sdk.embedProject(
-          target,
-          {
-            title: "Live Preview",
-            description: "Generated project preview",
-            template: "node",
-            files: combined,
-          },
-          {
-            view: "preview",
-            openFile,
-            height: "100%",
-            hideNavigation: true,
-            hideDevTools: true,
-            hideExplorer: true,
-            terminalHeight: 0,
-            showSidebar: false,
-            clickToLoad: false,
-          },
+export default defineConfig({
+  plugins: [react()],
+});`;
+        }
+        if (!combined["tsconfig.json"]) {
+          combined["tsconfig.json"] = JSON.stringify(
+            {
+              compilerOptions: {
+                target: "ES2020",
+                useDefineForClassFields: true,
+                lib: ["DOM", "DOM.Iterable", "ES2020"],
+                module: "ESNext",
+                skipLibCheck: true,
+                moduleResolution: "bundler",
+                allowImportingTsExtensions: true,
+                resolveJsonModule: true,
+                isolatedModules: true,
+                noEmit: true,
+                jsx: "react-jsx",
+                strict: true,
+                noUnusedLocals: false,
+                noUnusedParameters: false,
+                noFallthroughCasesInSwitch: true,
+              },
+              include: ["."],
+            },
+            null,
+            2,
+          );
+        }
+
+        const tree = buildFileSystemTree(combined);
+        await wc.mount(tree);
+        if (!active) return;
+
+        setWcState("installing");
+        const installProcess = await wc.spawn("npm", ["install"]);
+        installProcess.output.pipeTo(
+          new WritableStream({
+            write(data) {
+              console.log("[wc install]", data);
+            },
+          }),
+        );
+        const exitCode = await installProcess.exit;
+        if (exitCode !== 0) {
+          throw new Error(`npm install failed with exit code ${exitCode}`);
+        }
+        if (!active) return;
+
+        setWcState("starting");
+        const devProcess = await wc.spawn("npm", ["run", "dev"]);
+        devProcess.output.pipeTo(
+          new WritableStream({
+            write(data) {
+              console.log("[wc dev]", data);
+            },
+          }),
         );
 
-        if (!active) return;
-        vmRef.current = vm;
+        wc.on("server-ready", (port, url) => {
+          if (!active) return;
+          setPreviewUrl(url);
+          setWcState("ready");
+        });
+
         mountedFilesRef.current = { ...normalizedFiles };
-        setSbState("ready");
       } catch (err) {
-        console.error("StackBlitz embed failed:", err);
+        console.error("WebContainer setup failed:", err);
         if (active) {
           const errMsg = err instanceof Error ? err.message : String(err);
-          setSbError(errMsg);
-          setSbState("error");
+          setWcError(errMsg);
+          setWcState("error");
         }
       }
     }
 
-    void initStackBlitz();
+    void initWebContainer();
 
     return () => {
       active = false;
@@ -305,8 +332,11 @@ export function PreviewPanel({
     if (!isSandbox) {
       return `Working on ${modeDef.label.toLowerCase()}…`;
     }
-    if (sbState === "embedding")
-      return "Booting in-browser development server (this may take a few seconds)...";
+    if (wcState === "booting") return "Booting in-browser development server...";
+    if (wcState === "mounting") return "Preparing project files...";
+    if (wcState === "installing")
+      return "Installing project dependencies (this may take a few seconds)...";
+    if (wcState === "starting") return "Starting Vite development server...";
     return hasFiles ? "Updating your app..." : "Generating your app...";
   };
 
@@ -432,21 +462,46 @@ export function PreviewPanel({
             >
               <BentoLoader label={getLoaderLabel()} />
             </div>
-          ) : sbState === "error" ? (
+          ) : wcState === "error" ? (
             /* Error display */
-            <div className="flex h-full flex-col items-center justify-center p-6 text-center">
-              <div className="max-w-sm">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-destructive/20 bg-destructive/10 text-destructive">
+            <div className="flex h-full flex-col items-center justify-center p-6 text-center overflow-y-auto">
+              <div className="max-w-md my-auto">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border border-destructive/20 bg-destructive/10 text-destructive shrink-0">
                   <Triangle className="h-6 w-6" />
                 </div>
-                <h2 className="text-base font-semibold text-foreground">Preview Error</h2>
-                <p className="mt-1.5 text-xs text-muted-foreground text-center">
-                  Failed to start the preview environment. Your browser may not support the embedded
-                  WebContainer runtime, or third-party cookies are restricted.
-                </p>
-                {sbError && (
+                <h2 className="text-base font-semibold text-foreground">
+                  Preview Security Blocked
+                </h2>
+                <div className="mt-3 text-xs text-muted-foreground text-left space-y-2.5 bg-background/50 p-4 rounded-xl border border-border/60">
+                  <p className="font-medium text-foreground text-center">
+                    Cross-Origin Isolation (COOP & COEP) Headers are required for WebContainers.
+                  </p>
+                  <p>
+                    WebContainers run a real Node.js development server directly inside your
+                    browser. Because of this, modern browsers require strict security headers to
+                    protect your user data.
+                  </p>
+                  <p className="font-semibold text-foreground mt-2">Required Headers:</p>
+                  <pre className="text-[10px] bg-muted/80 p-2 rounded font-mono text-muted-foreground whitespace-pre-wrap select-all">
+                    {`Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Embedder-Policy: require-corp`}
+                  </pre>
+                  <p className="text-[11px] text-muted-foreground mt-2">
+                    <strong>Local development:</strong> Check that your{" "}
+                    <code className="font-mono bg-muted px-1 py-0.5 rounded">vite.config.ts</code>{" "}
+                    dev server configuration contains these headers.
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    <strong>Production hosting:</strong> Ensure your hosting provider (e.g.
+                    Cloudflare Pages, Vercel, Netlify) serves these headers. For Cloudflare Pages,
+                    verify the{" "}
+                    <code className="font-mono bg-muted px-1 py-0.5 rounded">public/_headers</code>{" "}
+                    file is present.
+                  </p>
+                </div>
+                {wcError && (
                   <pre className="mt-3 max-h-32 overflow-auto rounded bg-background/50 p-2 text-left font-mono text-[10px] text-destructive-foreground">
-                    {sbError}
+                    {wcError}
                   </pre>
                 )}
               </div>
@@ -510,19 +565,29 @@ export function PreviewPanel({
               </div>
             </div>
           ) : (
-            /* StackBlitz WebContainer preview + file-tree code viewer */
+            /* WebContainer preview + file-tree code viewer */
             <div className="flex h-full w-full flex-col">
-              {/* StackBlitz embed target — always in DOM so the WebContainer keeps running */}
+              {/* WebContainer iframe — always in DOM so the WebContainer keeps running */}
               <div
-                ref={embedContainerRef}
-                className="bg-white"
                 style={{
                   flex: 1,
                   minHeight: 0,
                   display: tab === "preview" ? "flex" : "none",
                   flexDirection: "column",
                 }}
-              />
+              >
+                {previewUrl ? (
+                  <iframe
+                    src={previewUrl}
+                    className="h-full w-full border-0 bg-white"
+                    allow="cross-origin-isolated; clipboard-read; clipboard-write;"
+                  />
+                ) : (
+                  <div className="flex h-full items-center justify-center text-xs text-muted-foreground bg-background">
+                    Initializing preview URL...
+                  </div>
+                )}
+              </div>
 
               {/* Code tab — custom file tree + viewer */}
               {tab === "code" && (
